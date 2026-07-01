@@ -20,6 +20,21 @@ Code Airlock keeps the workflow simple:
 | Limit network access | Can apply a configurable allowlist for model APIs and package registries |
 | Switch agents | Uses `AGENT=claude`, `AGENT=codex`, `AGENT=opencode`, and other Docker Sandbox agents |
 
+## Why Not Just Use `sbx` Directly?
+
+You can. Code Airlock is intentionally a thin wrapper around Docker Sandboxes, not a replacement for it.
+
+Use `sbx` directly when you want full control over sandbox lifecycle, policies, kits, and one-off experiments. Use Code Airlock when you want the common coding-agent loop already wired together:
+
+- clone mode by default
+- stable sandbox naming per repo
+- one-command agent startup
+- repo-local `AGENTS.md` scaffolding
+- `fetch`, `diff`, `review`, and `merge` commands for the sandbox branch
+- a documented credential and network-policy path for Claude Code, Codex, and OpenCode
+
+The point is to make the safe workflow boring and repeatable while still leaving `sbx` available underneath.
+
 ## Quick Start
 
 Install Docker Sandboxes first. On Linux:
