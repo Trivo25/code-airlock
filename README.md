@@ -2,6 +2,10 @@
 
 Run Claude Code, Codex, OpenCode, or another coding agent inside a disposable microVM, with its work committed to git so you can review everything from your host.
 
+<video src="./animation.mov" controls width="100%" title="Code Airlock demo"></video>
+
+[Watch the demo](./animation.mov)
+
 This is a thin wrapper around [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/). Docker Sandboxes already provides the hard part: each sandbox runs in its own lightweight virtual machine with its own kernel and Docker daemon, so an agent running with permissions disabled can install packages, run commands, and spin up containers without touching your host. This script makes the secure setup the default and reduces it to a handful of commands.
 
 ## Why a microVM and not just a container
