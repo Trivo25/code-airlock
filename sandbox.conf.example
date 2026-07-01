@@ -5,7 +5,7 @@
 # SANDBOX_NAME=sbx-myproject
 
 # Which agent to run. Docker Sandboxes supports several out of the box.
-# One of: claude, codex, gemini, copilot, opencode, kiro
+# Common choices: claude, codex, opencode, gemini, copilot, cursor, droid, kiro, shell
 # AGENT=claude
 
 # Repo the agent operates on (default: the current directory)
@@ -14,4 +14,6 @@
 # Comma-separated network allowlist. Under `lockdown` (deny-all default),
 # the sandbox can reach only these hosts. Add the registries and APIs your
 # build actually needs. A few common extras are shown commented below.
-# ALLOW=api.anthropic.com,*.anthropic.com,github.com,*.github.com,codeload.github.com,objects.githubusercontent.com,registry.npmjs.org,*.npmjs.org,*.pypi.org,files.pythonhosted.org,static.crates.io,index.crates.io
+# Default covers Claude, Codex, GitHub, and npm. For OpenCode, include the
+# provider hosts you actually use.
+# ALLOW=api.anthropic.com,*.anthropic.com,api.openai.com,*.openai.com,github.com,*.github.com,codeload.github.com,objects.githubusercontent.com,registry.npmjs.org,*.npmjs.org,*.pypi.org,files.pythonhosted.org,static.crates.io,index.crates.io

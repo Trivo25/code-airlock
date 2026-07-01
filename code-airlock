@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# claude-sbx — run Claude Code unattended in a Docker Sandbox (microVM),
+# code-airlock — run coding agents unattended in a Docker Sandbox (microVM),
 # with git-observable output and a locked-down network.
 #
 # The agent runs inside a disposable microVM with a hard hypervisor boundary
 # from your host. In clone mode it commits to a private clone; your repo is
 # mounted read-only and you review its work with a normal `git fetch`.
 #
-# Repo: https://github.com/Trivo25/claude-sbx   License: MIT
+# Repo: https://github.com/Trivo25/code-airlock   License: MIT
 
 set -euo pipefail
 
@@ -16,16 +16,18 @@ CONF="$(cd "$(dirname "$0")" && pwd)/sandbox.conf"
 # shellcheck disable=SC1090
 [ -f "$CONF" ] && . "$CONF"
 
-: "${AGENT:=claude}"                     # claude, codex, gemini, copilot, opencode, kiro
+: "${AGENT:=claude}"                     # claude, codex, opencode, gemini, copilot, cursor, droid, kiro, shell
 REPO_DIR="${REPO_DIR:-$PWD}"             # repo the agent works on
 
 # Sandbox name derived from the repo folder, sanitized to a safe token.
-_default_name="sbx-$(basename "$REPO_DIR" | tr -c 'a-zA-Z0-9._-' '-')"
+_repo_base="$(basename "$REPO_DIR")"
+_default_name="sbx-${_repo_base//[^a-zA-Z0-9._-]/-}"
 NAME="${SANDBOX_NAME:-$_default_name}"
 
 # Hosts the sandbox may reach. Everything else is blocked once you run
 # `lockdown` (or if your default sbx policy is already balanced/deny-all).
-ALLOW="${ALLOW:-api.anthropic.com,*.anthropic.com,github.com,*.github.com,codeload.github.com,objects.githubusercontent.com,registry.npmjs.org,*.npmjs.org}"
+DEFAULT_ALLOW="api.anthropic.com,*.anthropic.com,api.openai.com,*.openai.com,github.com,*.github.com,codeload.github.com,objects.githubusercontent.com,registry.npmjs.org,*.npmjs.org"
+ALLOW="${ALLOW:-$DEFAULT_ALLOW}"
 
 # ---- helpers ----------------------------------------------------------------
 _c()  { printf '\033[%sm%s\033[0m\n' "$1" "$2"; }
@@ -62,12 +64,26 @@ running() { sbx exec "$NAME" true >/dev/null 2>&1; }
 
 apply_network() {
   info "Restricting network for '$NAME' to: $ALLOW"
-  sbx policy allow network --sandbox "$NAME" "$ALLOW" >/dev/null 2>&1 \
+  sbx policy allow network --sandbox "$NAME" "$ALLOW" \
     || warn "Could not apply network rules yet. Check: sbx policy ls"
 }
 
 current_branch() {
   git -C "$REPO_DIR" symbolic-ref --short HEAD 2>/dev/null || echo main
+}
+
+agent_hint() {
+  case "$AGENT" in
+    claude)
+      info "Claude auth: interactive /login in the sandbox, or store a key with: sbx secret set -g anthropic"
+      ;;
+    codex)
+      info "Codex auth: run 'sbx secret set -g openai --oauth' or 'sbx secret set -g openai' before headless runs."
+      ;;
+    opencode)
+      info "OpenCode auth: store provider keys with sbx secret, e.g. openai, anthropic, google, xai, groq, aws, or openrouter."
+      ;;
+  esac
 }
 
 # ---- commands ---------------------------------------------------------------
@@ -77,16 +93,18 @@ cmd_up() {
   ensure_repo
   running && die "Sandbox '$NAME' already exists. Use '$0 shell', or '$0 rm' to recreate."
 
+  info "If Docker Sandboxes asks for a global network policy, choose Balanced or Locked Down."
   apply_network
-  info "Starting $AGENT in a microVM sandbox '$NAME' (clone mode, unattended)."
+  info "Starting $AGENT in a microVM sandbox '$NAME' (clone mode)."
   info "Review its commits on your host with:  git fetch sandbox-$NAME"
+  agent_hint
   warn "Full network isolation applies only under a balanced/deny-all default."
   warn "For strict isolation run once:  $0 lockdown"
 
   # --clone: agent works on a private clone; host repo mounted read-only.
-  # sbx launches Claude Code with --dangerously-skip-permissions by default.
+  # Docker Sandboxes applies each agent's own startup defaults.
   # Any extra args after the command are passed through to the agent, e.g.:
-  #   ./claude-sbx up -- -p "refactor the auth module and run the tests"
+  #   ./code-airlock up -- -p "refactor the auth module and run the tests"
   if [ "$#" -gt 0 ]; then
     sbx run --clone --name "$NAME" "$AGENT" "$@"
   else
@@ -137,11 +155,11 @@ cmd_lockdown() {
 
 usage() {
   cat <<EOF
-claude-sbx — run Claude Code unattended in a Docker Sandbox
+code-airlock — run coding agents in a Docker Sandbox microVM
 
 Usage: $(basename "$0") <command> [args]
 
-  up [-- agent-args]  Create and start the sandbox (clone mode, YOLO, restricted net)
+  up [-- agent-args]  Create and start the sandbox (clone mode, agent-specific bypass mode)
   shell               Open a shell inside the running sandbox
   fetch               git fetch the agent's commits (remote: sandbox-<name>)
   diff  [base]        Fetch, then diff base..sandbox-<name>/base
@@ -153,6 +171,7 @@ Usage: $(basename "$0") <command> [args]
   help                Show this message
 
 Config: edit ./sandbox.conf (see sandbox.conf.example) or set env vars.
+Active agent: $AGENT
 Active sandbox name: $NAME
 EOF
 }

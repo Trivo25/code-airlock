@@ -1,6 +1,6 @@
-# claude-sbx
+# code-airlock
 
-Run Claude Code (or another coding agent) unattended, inside a disposable microVM, with its work committed to git so you can review everything from your host.
+Run Claude Code, Codex, OpenCode, or another coding agent inside a disposable microVM, with its work committed to git so you can review everything from your host.
 
 This is a thin wrapper around [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/). Docker Sandboxes already provides the hard part: each sandbox runs in its own lightweight virtual machine with its own kernel and Docker daemon, so an agent running with permissions disabled can install packages, run commands, and spin up containers without touching your host. This script makes the secure setup the default and reduces it to a handful of commands.
 
@@ -8,7 +8,7 @@ This is a thin wrapper around [Docker Sandboxes](https://docs.docker.com/ai/sand
 
 A coding agent with permissions disabled will, if a task calls for it, reason its way around application-level guardrails. There are documented cases of an agent bypassing a denylist and then disabling the OS sandbox that caught it, purely to finish the job. OS-level sandboxes (Seatbelt, bubblewrap) and deny rules are useful for reducing prompts, but the boundary an agent inside cannot open is the hypervisor. Docker Sandboxes puts that boundary between the agent and your machine, which is why it's the right base for fully unattended runs.
 
-This wrapper adds three things on top:
+Code Airlock adds three things on top:
 
 - **Clone mode by default**, so the agent commits to a private clone and your repo stays mounted read-only. You review its work with a normal `git fetch`.
 - **A network allowlist**, so under lockdown the sandbox can reach only the hosts you name (your model API, GitHub, your package registries) and nothing else.
@@ -35,13 +35,15 @@ sbx login
 
 On macOS and Windows, follow the [official install guide](https://docs.docker.com/ai/sandboxes/get-started/). At first login `sbx` asks you to pick a default network policy; **Balanced** or **Locked Down** is a good starting point for this workflow.
 
+If `sbx` asks for the global network policy during your first `code-airlock up`, choose **Balanced** or **Locked Down**. Code Airlock applies its per-sandbox allowlist after that policy exists.
+
 Then grab this tool:
 
 ```bash
-git clone https://github.com/Trivo25/claude-sbx.git
-cd claude-sbx
+git clone https://github.com/Trivo25/code-airlock.git
+cd code-airlock
 # optional: put it on your PATH
-ln -s "$PWD/claude-sbx" ~/.local/bin/claude-sbx
+ln -s "$PWD/code-airlock" ~/.local/bin/code-airlock
 ```
 
 ## Quick start
@@ -50,70 +52,94 @@ Run it from inside the repo you want the agent to work on. It works on both a fr
 
 ```bash
 cd ~/code/my-project
-claude-sbx lockdown     # one-time: deny-all network + apply the allowlist
-claude-sbx up           # start Claude Code in the sandbox, unattended
+code-airlock lockdown     # one-time: deny-all network + apply the allowlist
+code-airlock up           # start Claude Code in the sandbox
 ```
 
-On the first `up`, Claude Code prompts for authentication inside the sandbox. Run `/login` there to sign in with your Claude subscription, or provide an API key (see Authentication below). Give it a goal, and it works without stopping for permission on each command.
+Claude Code remains the default because it is the most common unattended workflow today. Pick another supported agent with `AGENT`:
+
+```bash
+AGENT=codex code-airlock up
+AGENT=opencode code-airlock up
+```
+
+On the first run, authenticate the selected agent as described below. Give it a goal, and it works inside the microVM instead of on your host.
 
 While it runs, from your host:
 
 ```bash
-claude-sbx fetch        # pull its commits into the sandbox-<name> remote
-claude-sbx diff         # fetch, then show the diff against your branch
-claude-sbx shell        # drop into a shell inside the sandbox to look around
-claude-sbx net          # see which hosts it reached or was blocked from
+code-airlock fetch        # pull its commits into the sandbox-<name> remote
+code-airlock diff         # fetch, then show the diff against your branch
+code-airlock shell        # drop into a shell inside the sandbox to look around
+code-airlock net          # see which hosts it reached or was blocked from
 ```
 
 When you're happy with the work:
 
 ```bash
-claude-sbx merge        # merge the agent's branch into yours
+code-airlock merge        # merge the agent's branch into yours
 # or handle the sandbox-<name> remote manually with your usual git tools
 ```
 
 When you're done:
 
 ```bash
-claude-sbx stop         # keep the VM and its commits for later
-claude-sbx rm           # delete the sandbox (offers to fetch first)
+code-airlock stop         # keep the VM and its commits for later
+code-airlock rm           # delete the sandbox (offers to fetch first)
 ```
 
 ## Unattended / headless runs
 
-Pass agent arguments after `--` to run without attaching. For Claude Code, `-p` runs a single headless task and keeps permissions disabled:
+Pass agent arguments after `--`. Agent CLIs differ, so use the flags for the agent you selected.
+
+For Claude Code, `-p` runs a single headless task:
 
 ```bash
-claude-sbx up -- -p "add pagination to the users endpoint and run the test suite"
+code-airlock up -- -p "add pagination to the users endpoint and run the test suite"
 ```
 
-Headless runs can't do interactive `/login`, so set an API key first (see below).
+For Codex, Docker Sandboxes starts Codex with its bypass flags by default. When passing a prompt, lead with the flag if you want to preserve that mode:
+
+```bash
+AGENT=codex code-airlock up -- --dangerously-bypass-approvals-and-sandbox "fix the build"
+```
+
+OpenCode defaults to a TUI. Use OpenCode's own flags after `--` for session-specific behavior.
 
 ## Authentication
 
-Two options:
+Credentials should go through Docker Sandboxes' secret manager or host-side auth flow rather than being copied into the VM.
 
-- **Subscription (interactive)**: run `claude-sbx up` and use `/login` inside the sandbox.
-- **API key**: store it with the sandbox secret manager so it goes through the host proxy instead of living in the VM. See `sbx secret` in the [Docker docs](https://docs.docker.com/ai/sandboxes/). Host `~/.claude` config is not carried into the sandbox by design; put any project config you need inside the repo itself.
+- **Claude Code**: run `code-airlock up` and use `/login` inside the sandbox, or store an Anthropic key with `sbx secret set -g anthropic`.
+- **Codex**: authenticate on the host with `sbx secret set -g openai --oauth`, store an API key with `sbx secret set -g openai`, or export `OPENAI_API_KEY` before launching.
+- **OpenCode**: store keys for the providers you use, for example `sbx secret set -g openai`, `sbx secret set -g anthropic`, `sbx secret set -g google`, `sbx secret set -g xai`, `sbx secret set -g groq`, `sbx secret set -g aws`, or `sbx secret set -g openrouter`.
+
+Sandboxes do not carry user-level config such as `~/.claude` or `~/.codex` into the VM by design. Put project-level config in the repo if the agent needs it.
 
 ## Configuration
 
 Copy `sandbox.conf.example` to `sandbox.conf` and edit. You can set the sandbox name, the agent, the target repo, and the network allowlist. `sandbox.conf` is git-ignored.
 
-The default allowlist covers the Anthropic API, GitHub, and npm. Add your registries (`*.pypi.org`, `static.crates.io`, and so on) as your projects need them. If a download fails, `claude-sbx net` shows exactly which host was blocked so you can add it.
+The default allowlist covers Anthropic, OpenAI, GitHub, and npm. Add your model provider hosts and package registries (`*.pypi.org`, `static.crates.io`, and so on) as your projects need them. If a download fails, `code-airlock net` shows exactly which host was blocked so you can add it.
+
+```bash
+# sandbox.conf
+AGENT=codex
+ALLOW=api.openai.com,*.openai.com,github.com,*.github.com,registry.npmjs.org,*.npmjs.org
+```
 
 ## Security notes
 
 - The `lockdown` command sets `deny-all` as the default policy for **all** your sandboxes, then re-adds the allowlist. Revert with `sbx policy reset`.
 - Keep the allowlist as narrow as the task allows. The proxy filters on the hostname the client presents and does not inspect TLS, so a broad entry (for example a wildcard you don't need) widens the only remaining exfiltration path. Isolation here is about your machine, not a guarantee against data egress over an allowed host.
 - Don't feed the sandbox host credentials you don't want it to have. Give it a repo-scoped token for pushing, not your full SSH agent.
-- `claude-sbx rm` deletes the clone. Fetch or push anything you want to keep first; the command offers to fetch for you.
+- `code-airlock rm` deletes the clone. Fetch or push anything you want to keep first; the command offers to fetch for you.
 
 ## Commands
 
 | Command              | What it does                                                         |
 | -------------------- | -------------------------------------------------------------------- |
-| `up [-- agent-args]` | Create and start the sandbox in clone mode with permissions disabled |
+| `up [-- agent-args]` | Create and start the sandbox in clone mode with the selected agent       |
 | `shell`              | Open a shell inside the running sandbox                              |
 | `fetch`              | `git fetch` the agent's commits                                      |
 | `diff [base]`        | Fetch, then diff `base..sandbox-<name>/base`                         |
