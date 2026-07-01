@@ -52,6 +52,7 @@ Run it from inside the repo you want the agent to work on. It works on both a fr
 
 ```bash
 cd ~/code/my-project
+code-airlock init         # optional: add starter agent instructions
 code-airlock lockdown     # one-time: deny-all network + apply the allowlist
 code-airlock up           # start Claude Code in the sandbox
 ```
@@ -64,6 +65,16 @@ AGENT=opencode code-airlock up
 ```
 
 On the first run, authenticate the selected agent as described below. Give it a goal, and it works inside the microVM instead of on your host.
+
+## Agent instructions
+
+Coding agents usually look for repo-local instruction files before they start work. Code Airlock can create a small starter file:
+
+```bash
+code-airlock init
+```
+
+This writes `AGENTS.md` in the target repo only if it does not already exist. The file is intentionally committed or edited by you like normal project documentation; `code-airlock up` does not silently modify your working tree.
 
 While it runs, from your host:
 
@@ -172,6 +183,7 @@ ALLOW=api.openai.com,*.openai.com,github.com,*.github.com,registry.npmjs.org,*.n
 | `stop`               | Stop the sandbox, keeping its VM and commits                         |
 | `rm`                 | Remove the sandbox (offers to fetch first)                           |
 | `lockdown`           | Set `deny-all` default policy and apply the allowlist                |
+| `init`               | Create a starter `AGENTS.md` in the target repo                      |
 
 ## License
 

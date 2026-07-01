@@ -90,6 +90,40 @@ current_branch() {
   git -C "$REPO_DIR" symbolic-ref --short HEAD 2>/dev/null || echo main
 }
 
+agents_file() {
+  printf '%s/AGENTS.md' "$REPO_DIR"
+}
+
+write_agents_file() {
+  path="$(agents_file)"
+  [ -e "$path" ] && die "AGENTS.md already exists in $REPO_DIR"
+
+  cat >"$path" <<'EOF'
+# Agent Instructions
+
+This repository may be worked on by sandboxed coding agents through Code Airlock.
+
+## Working Rules
+
+- Inspect the repo before editing. Follow existing structure, style, and tooling.
+- Keep changes small, reviewable, and focused on the requested task.
+- Do not add dependencies, push to remotes, publish releases, or touch credentials unless explicitly asked.
+- Prefer fixing root causes over broad rewrites.
+- Commit finished work inside the sandbox so the host can fetch, diff, and merge it.
+
+## Verification
+
+- Run the most relevant tests, linters, formatters, or build checks for the change.
+- If a check cannot be run, explain why in the final response.
+- Report changed files and any known risks before stopping.
+EOF
+}
+
+hint_agents_file() {
+  [ -e "$(agents_file)" ] && return 0
+  info "No AGENTS.md found in the target repo. Run '$0 init' to add starter agent instructions."
+}
+
 agent_hint() {
   case "$AGENT" in
     claude)
@@ -111,6 +145,7 @@ cmd_up() {
   ensure_repo
   running && die "Sandbox '$NAME' already exists. Use '$0 shell', or '$0 rm' to recreate."
 
+  hint_agents_file
   init_global_network_policy
   info "Starting $AGENT in a microVM sandbox '$NAME' (clone mode)."
   info "Review its commits on your host with:  git fetch sandbox-$NAME"
@@ -131,6 +166,12 @@ cmd_up() {
 }
 
 cmd_shell() { preflight; sbx exec -it "$NAME" bash; }
+
+cmd_init() {
+  [ -d "$REPO_DIR" ] || die "Repo directory does not exist: $REPO_DIR"
+  write_agents_file
+  info "Created $(agents_file)"
+}
 
 cmd_fetch() { preflight; git -C "$REPO_DIR" fetch "sandbox-$NAME"; }
 
@@ -186,6 +227,7 @@ Usage: $(basename "$0") <command> [args]
   stop                Stop the sandbox, keeping the VM and its commits
   rm                  Remove the sandbox (offers to fetch first, then deletes it)
   lockdown            Set deny-all default policy and reapply the allowlist
+  init                Create a starter AGENTS.md in the target repo
   help                Show this message
 
 Config: edit ./sandbox.conf (see sandbox.conf.example) or set env vars.
@@ -196,6 +238,7 @@ EOF
 
 case "${1:-help}" in
   up)       shift; cmd_up "$@" ;;
+  init)     shift; cmd_init "$@" ;;
   shell)    shift; cmd_shell "$@" ;;
   fetch)    shift; cmd_fetch "$@" ;;
   diff)     shift; cmd_diff "$@" ;;
