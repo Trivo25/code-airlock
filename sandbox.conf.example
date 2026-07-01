@@ -25,6 +25,15 @@
 # Attach immediately after starting a tmux-backed run. Set to 0 for unattended runs.
 # TMUX_ATTACH=1
 
+# Copy curated user-level agent config into new sandboxes before launch.
+# This copies behavior/instruction files only, not auth/history/cache paths.
+# SEED_CONFIG=0
+
+# Comma-separated extra paths under $HOME to copy into matching /home/user paths.
+# Secret-like paths such as auth.json, token files, history, logs, cache, and
+# node_modules are skipped.
+# SEED_PATHS=$HOME/.codex/config.toml,$HOME/.claude/settings.json
+
 # Comma-separated network allowlist. Under `lockdown` (deny-all default),
 # the sandbox can reach only these hosts. Add the registries and APIs your
 # build actually needs. A few common extras are shown commented below.

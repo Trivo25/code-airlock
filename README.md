@@ -126,6 +126,7 @@ code-airlock doctor       # check sbx, virtualization, login, and git
 code-airlock --dry-run up # preview the sbx commands without running them
 code-airlock init         # optional: add starter AGENTS.md instructions
 code-airlock up           # start Claude Code in a sandbox
+code-airlock --seed-config up # optionally copy user-level agent customizations
 code-airlock status       # see this repo's sandbox and tmux session
 ```
 
@@ -241,6 +242,42 @@ code-airlock init
 ```
 
 This writes `AGENTS.md` in the target repo only if one does not already exist. `code-airlock up` will mention the command when no `AGENTS.md` is present, but it will not silently modify your working tree.
+
+## Config Seeding
+
+By default, a sandbox starts with a fresh agent home directory. Project files that are committed to Git come through clone mode, but personal commands, skills, subagents, and global instructions from your host home directory do not.
+
+Opt in to copying curated user-level config before the agent starts:
+
+```bash
+code-airlock --seed-config up
+```
+
+This changes startup from one `sbx run` call to:
+
+```bash
+sbx create --clone ...
+sbx cp ...
+sbx run --name ...
+```
+
+Default seeded paths:
+
+| Agent | Paths |
+| --- | --- |
+| Claude Code | `~/.claude/CLAUDE.md`, `~/.claude/commands/`, `~/.claude/agents/`, `~/.claude/skills/` |
+| Codex | `~/.codex/AGENTS.md`, `~/.codex/AGENT.md`, `~/.codex/agents/`, `~/.codex/skills/`, `~/.codex/prompts/` |
+| OpenCode | `~/.config/opencode/AGENTS.md`, `~/.config/opencode/opencode.jsonc`, `~/.config/opencode/commands/`, `~/.config/opencode/agents/`, `~/.config/opencode/skills/` |
+
+Code Airlock does not copy auth files, histories, logs, caches, session state, or `node_modules` by default. Credentials should still go through Docker Sandboxes' secret manager.
+
+Copy explicit extra user-level paths with:
+
+```bash
+SEED_PATHS="$HOME/.codex/config.toml,$HOME/.claude/settings.json" code-airlock --seed-config up
+```
+
+`SEED_PATHS` entries must be under `$HOME`; secret-like paths are skipped. Gitignored project-local files are not copied by default. Prefer committing project instructions such as `AGENTS.md`, `CLAUDE.md`, and `.claude/commands/` when they are meant to travel with the repo.
 
 ## Authentication
 
@@ -365,6 +402,8 @@ GLOBAL_NETWORK_POLICY=balanced
 REVIEW_TOOL=vscode
 TMUX_SESSION=code-airlock-sbx-my-project
 TMUX_ATTACH=1
+SEED_CONFIG=0
+SEED_PATHS=$HOME/.codex/config.toml,$HOME/.claude/settings.json
 ALLOW=api.anthropic.com,*.anthropic.com,github.com,*.github.com
 ```
 
@@ -397,6 +436,7 @@ Global option:
 | `--dry-run` | Print commands instead of running them |
 | `--tmux` | Run `up` inside a host-side tmux session and attach |
 | `--tmux-detached` | Run `up` inside a detached host-side tmux session |
+| `--seed-config` | Copy curated user-level agent config before starting |
 
 ## Security Notes
 

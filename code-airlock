@@ -23,6 +23,9 @@ REPO_DIR="${REPO_DIR:-$PWD}"             # repo the agent works on
 : "${DRY_RUN:=0}"                        # 1 prints commands without running them
 : "${USE_TMUX:=0}"                       # 1 runs `up` inside a host tmux session
 : "${TMUX_ATTACH:=1}"                    # 1 attaches after starting a tmux-backed `up`
+: "${SEED_CONFIG:=0}"                    # 1 seeds curated user-level agent config
+: "${SEED_USER_CONFIG:=$SEED_CONFIG}"    # 1 copies user-level commands/agents/skills/instructions
+: "${SEED_PATHS:=}"                      # comma-separated extra host paths to copy under /home/user
 
 # Sandbox name derived from the repo folder, sanitized to a safe token.
 _repo_base="$(basename "$REPO_DIR")"
@@ -54,6 +57,12 @@ quote_words() {
   for word in "$@"; do
     printf ' %q' "$word"
   done
+}
+
+quote_env() {
+  name="$1"
+  value="$2"
+  printf '%s=%q' "$name" "$value"
 }
 
 run_cmd() {
@@ -96,6 +105,98 @@ ensure_repo() {
 }
 
 running() { sbx exec "$NAME" true >/dev/null 2>&1; }
+
+seed_path_is_safe() {
+  case "$1" in
+    */auth.json|*/auth.*|*credentials*|*credential*|*token*|*/sessions|*/sessions/*|*/logs|*/logs/*|*/history*|*.log|*/cache|*/cache/*|*/node_modules|*/node_modules/*)
+      return 1
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+}
+
+seed_copy() {
+  src="$1"
+  dest_dir="$2"
+
+  if ! seed_path_is_safe "$src"; then
+    warn "Skipping potentially sensitive config path: $src"
+    return 0
+  fi
+
+  if [ "$DRY_RUN" != 1 ] && [ ! -e "$src" ]; then
+    return 0
+  fi
+
+  info "Seeding config: $src -> $NAME:$dest_dir"
+  run_sbx exec "$NAME" mkdir -p "$dest_dir"
+  run_sbx cp "$src" "$NAME:$dest_dir"
+}
+
+seed_extra_paths() {
+  [ -n "$SEED_PATHS" ] || return 0
+
+  old_ifs="$IFS"
+  IFS=,
+  # shellcheck disable=SC2206
+  paths=($SEED_PATHS)
+  IFS="$old_ifs"
+
+  for src in "${paths[@]}"; do
+    [ -n "$src" ] || continue
+    case "$src" in
+      "$HOME"/*)
+        rel="${src#"$HOME"/}"
+        dest_dir="/home/user/$(dirname "$rel")"
+        seed_copy "$src" "$dest_dir"
+        ;;
+      *)
+        warn "Skipping SEED_PATHS entry outside HOME: $src"
+        ;;
+    esac
+  done
+}
+
+seed_user_config() {
+  [ "$SEED_USER_CONFIG" = 1 ] || [ -n "$SEED_PATHS" ] || return 0
+
+  info "Seeding user-level agent config into '$NAME'."
+  case "$AGENT" in
+    claude)
+      if [ "$SEED_USER_CONFIG" = 1 ]; then
+        seed_copy "$HOME/.claude/CLAUDE.md" "/home/user/.claude"
+        seed_copy "$HOME/.claude/commands" "/home/user/.claude"
+        seed_copy "$HOME/.claude/agents" "/home/user/.claude"
+        seed_copy "$HOME/.claude/skills" "/home/user/.claude"
+      fi
+      ;;
+    codex)
+      if [ "$SEED_USER_CONFIG" = 1 ]; then
+        seed_copy "$HOME/.codex/AGENTS.md" "/home/user/.codex"
+        seed_copy "$HOME/.codex/AGENT.md" "/home/user/.codex"
+        seed_copy "$HOME/.codex/agents" "/home/user/.codex"
+        seed_copy "$HOME/.codex/skills" "/home/user/.codex"
+        seed_copy "$HOME/.codex/prompts" "/home/user/.codex"
+      fi
+      ;;
+    opencode)
+      if [ "$SEED_USER_CONFIG" = 1 ]; then
+        seed_copy "$HOME/.config/opencode/AGENTS.md" "/home/user/.config/opencode"
+        seed_copy "$HOME/.config/opencode/opencode.jsonc" "/home/user/.config/opencode"
+        seed_copy "$HOME/.config/opencode/commands" "/home/user/.config/opencode"
+        seed_copy "$HOME/.config/opencode/agents" "/home/user/.config/opencode"
+        seed_copy "$HOME/.config/opencode/skills" "/home/user/.config/opencode"
+      fi
+      ;;
+    *)
+      [ "$SEED_USER_CONFIG" = 1 ] && warn "No default user-config seed allowlist for agent '$AGENT'. Use SEED_PATHS for explicit paths."
+      ;;
+  esac
+
+  seed_extra_paths
+}
 
 tmux_session_exists() {
   tmux has-session -t "$TMUX_SESSION" 2>/dev/null
@@ -212,7 +313,7 @@ cmd_up_tmux() {
   session="$TMUX_SESSION"
   tmux_shell="${SHELL:-/bin/sh}"
   script_path="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
-  inner_cmd="AGENT=$(printf '%q' "$AGENT") REPO_DIR=$(printf '%q' "$REPO_DIR") SANDBOX_NAME=$(printf '%q' "$NAME") GLOBAL_NETWORK_POLICY=$(printf '%q' "$GLOBAL_NETWORK_POLICY") REVIEW_TOOL=$(printf '%q' "$REVIEW_TOOL") TMUX_SESSION=$(printf '%q' "$TMUX_SESSION") ALLOW=$(printf '%q' "$ALLOW") $(printf '%q' "$script_path") up$(quote_words "$@")"
+  inner_cmd="$(quote_env AGENT "$AGENT") $(quote_env REPO_DIR "$REPO_DIR") $(quote_env SANDBOX_NAME "$NAME") $(quote_env GLOBAL_NETWORK_POLICY "$GLOBAL_NETWORK_POLICY") $(quote_env REVIEW_TOOL "$REVIEW_TOOL") $(quote_env TMUX_SESSION "$TMUX_SESSION") $(quote_env ALLOW "$ALLOW") $(quote_env SEED_CONFIG "$SEED_CONFIG") $(quote_env SEED_USER_CONFIG "$SEED_USER_CONFIG") $(quote_env SEED_PATHS "$SEED_PATHS") $(printf '%q' "$script_path") up$(quote_words "$@")"
 
   if [ "$DRY_RUN" != 1 ] && tmux has-session -t "$session" 2>/dev/null; then
     die "tmux session '$session' already exists. Attach with: tmux attach -t $session"
@@ -280,6 +381,17 @@ cmd_up() {
   # Docker Sandboxes applies each agent's own startup defaults.
   # Any extra args after the command are passed through to the agent, e.g.:
   #   ./code-airlock up -- -p "refactor the auth module and run the tests"
+  if [ "$SEED_USER_CONFIG" = 1 ] || [ -n "$SEED_PATHS" ]; then
+    run_sbx create --clone --name "$NAME" "$AGENT" "$REPO_DIR"
+    seed_user_config
+    if [ "$#" -gt 0 ]; then
+      run_sbx run --name "$NAME" "$AGENT" "$@"
+    else
+      run_sbx run --name "$NAME" "$AGENT"
+    fi
+    return 0
+  fi
+
   if [ "$#" -gt 0 ]; then
     run_sbx run --clone --name "$NAME" "$AGENT" "$@"
   else
@@ -508,7 +620,7 @@ usage() {
   cat <<EOF
 code-airlock — run coding agents in a Docker Sandbox microVM
 
-Usage: $(basename "$0") [--dry-run] [--tmux|--tmux-detached] <command> [args]
+Usage: $(basename "$0") [--dry-run] [--tmux|--tmux-detached] [--seed-config] <command> [args]
 
   up [-- agent-args]  Create and start the sandbox (clone mode, agent-specific bypass mode)
   doctor              Check sbx, virtualization/KVM, git, daemon, and login status
@@ -531,6 +643,7 @@ Options:
   --dry-run           Print commands without running them
   --tmux              Run 'up' inside a host tmux session and attach
   --tmux-detached     Run 'up' inside a detached host tmux session
+  --seed-config       Copy curated user-level agent config before starting
 
 Config: edit ./sandbox.conf (see sandbox.conf.example) or set env vars.
 Active agent: $AGENT
@@ -553,6 +666,11 @@ while [ "$#" -gt 0 ]; do
     --tmux-detached)
       USE_TMUX=1
       TMUX_ATTACH=0
+      shift
+      ;;
+    --seed-config|--seed-user-config)
+      SEED_CONFIG=1
+      SEED_USER_CONFIG=1
       shift
       ;;
     --)
