@@ -96,13 +96,14 @@ code-airlock doctor       # check sbx, virtualization, login, and git
 code-airlock --dry-run up # preview the sbx commands without running them
 code-airlock init         # optional: add starter AGENTS.md instructions
 code-airlock up           # start Claude Code in a sandbox
+code-airlock status       # see this repo's sandbox and tmux session
 ```
 
 On a remote server, keep the agent running after your SSH connection closes:
 
 ```bash
-code-airlock --tmux up
-code-airlock attach
+code-airlock --tmux up # detach with Ctrl-b, then d
+code-airlock attach    # reattach later
 ```
 
 Use another agent:
@@ -345,6 +346,7 @@ ALLOW=api.anthropic.com,*.anthropic.com,github.com,*.github.com
 | --- | --- |
 | `up [-- agent-args]` | Create and start the sandbox in clone mode with the selected agent |
 | `doctor` | Check `sbx`, virtualization/KVM, git, daemon reachability, and login status |
+| `status` | Show this repo's sandbox and tmux session status |
 | `attach` | Attach to this repo's Code Airlock tmux session |
 | `init` | Create a starter `AGENTS.md` in the target repo |
 | `shell` | Open a shell inside the running sandbox |
@@ -354,7 +356,7 @@ ALLOW=api.anthropic.com,*.anthropic.com,github.com,*.github.com
 | `merge [base]` | Fetch, then merge the sandbox branch into `base` |
 | `net` | Show allowed and blocked network hosts |
 | `stop` | Stop the sandbox but keep its VM and commits |
-| `rm` | Remove the sandbox after offering to fetch commits |
+| `rm` | Remove the sandbox and repo tmux session after offering to fetch commits |
 | `lockdown` | Set the global policy to deny-all and apply the allowlist to an existing sandbox |
 | `unlock` | Reset Docker Sandboxes policies with `sbx policy reset` |
 

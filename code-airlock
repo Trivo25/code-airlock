@@ -97,6 +97,23 @@ ensure_repo() {
 
 running() { sbx exec "$NAME" true >/dev/null 2>&1; }
 
+tmux_session_exists() {
+  tmux has-session -t "$TMUX_SESSION" 2>/dev/null
+}
+
+kill_tmux_session() {
+  if [ "$DRY_RUN" = 1 ]; then
+    print_cmd tmux has-session -t "$TMUX_SESSION"
+    print_cmd tmux kill-session -t "$TMUX_SESSION"
+    return 0
+  fi
+
+  command -v tmux >/dev/null 2>&1 || return 0
+  tmux_session_exists || return 0
+  info "Removing tmux session '$TMUX_SESSION'."
+  tmux kill-session -t "$TMUX_SESSION"
+}
+
 init_global_network_policy() {
   info "Initializing Docker Sandboxes global network policy if needed: $GLOBAL_NETWORK_POLICY"
   if [ "$DRY_RUN" = 1 ]; then
@@ -226,7 +243,7 @@ attach_tmux_session() {
 
 cmd_attach() {
   [ "$DRY_RUN" = 1 ] || need tmux
-  if [ "$DRY_RUN" != 1 ] && ! tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
+  if [ "$DRY_RUN" != 1 ] && ! tmux_session_exists; then
     die "tmux session '$TMUX_SESSION' not found. Start one with: $0 --tmux up"
   fi
 
@@ -327,11 +344,56 @@ cmd_stop() {
   fi
 }
 
+cmd_status() {
+  DOCTOR_FAILS=0
+  DOCTOR_WARNS=0
+
+  info "Code Airlock status for: $REPO_DIR"
+  printf 'Sandbox: %s\n' "$NAME"
+  printf 'tmux:    %s\n' "$TMUX_SESSION"
+
+  if [ "$DRY_RUN" = 1 ]; then
+    print_cmd sbx exec "$NAME" true
+    print_cmd sbx ls
+    print_cmd tmux has-session -t "$TMUX_SESSION"
+    print_cmd tmux display-message -p -t "$TMUX_SESSION" '#{session_attached}'
+    return 0
+  fi
+
+  if command -v sbx >/dev/null 2>&1; then
+    if running; then
+      doctor_ok "sandbox '$NAME' is running"
+    elif sbx_list="$(sbx ls 2>/dev/null)" && printf '%s\n' "$sbx_list" | grep -F "$NAME" >/dev/null; then
+      doctor_warn "sandbox '$NAME' exists but is not running/reachable"
+    else
+      doctor_warn "sandbox '$NAME' not found"
+    fi
+  else
+    doctor_fail "sbx is not installed"
+  fi
+
+  if command -v tmux >/dev/null 2>&1; then
+    if tmux_session_exists; then
+      attached="$(tmux display-message -p -t "$TMUX_SESSION" '#{session_attached}' 2>/dev/null || echo '?')"
+      if [ "$attached" = 0 ]; then
+        doctor_ok "tmux session '$TMUX_SESSION' is active and detached"
+      else
+        doctor_ok "tmux session '$TMUX_SESSION' is active; attached clients: $attached"
+      fi
+    else
+      doctor_warn "tmux session '$TMUX_SESSION' not found"
+    fi
+  else
+    doctor_warn "tmux is not installed"
+  fi
+}
+
 cmd_rm() {
   preflight
-  warn "Removing '$NAME' deletes its clone. Unfetched or unpushed commits are lost."
+  warn "Removing '$NAME' deletes its clone and this repo's tmux session. Unfetched or unpushed commits are lost."
   if [ "$DRY_RUN" = 1 ]; then
     print_cmd git -C "$REPO_DIR" fetch "sandbox-$NAME"
+    kill_tmux_session
     run_sbx rm "$NAME"
     return 0
   fi
@@ -339,6 +401,7 @@ cmd_rm() {
   printf 'Fetch its commits first? [Y/n] '
   read -r ans
   [ "${ans:-}" = n ] || git -C "$REPO_DIR" fetch "sandbox-$NAME" 2>/dev/null || true
+  kill_tmux_session
   sbx rm "$NAME"
 }
 
@@ -449,6 +512,7 @@ Usage: $(basename "$0") [--dry-run] [--tmux|--tmux-detached] <command> [args]
 
   up [-- agent-args]  Create and start the sandbox (clone mode, agent-specific bypass mode)
   doctor              Check sbx, virtualization/KVM, git, daemon, and login status
+  status              Show this repo's sandbox and tmux session status
   attach              Attach to this repo's Code Airlock tmux session
   shell               Open a shell inside the running sandbox
   fetch               git fetch the agent's commits (remote: sandbox-<name>)
@@ -457,7 +521,7 @@ Usage: $(basename "$0") [--dry-run] [--tmux|--tmux-detached] <command> [args]
   merge [base]        Fetch, then merge the agent's branch into base
   net                 Show the sandbox network log (allowed / blocked hosts)
   stop                Stop the sandbox, keeping the VM and its commits
-  rm                  Remove the sandbox (offers to fetch first, then deletes it)
+  rm                  Remove the sandbox and repo tmux session
   lockdown            Set deny-all default policy and allowlist an existing sandbox
   unlock              Reset Docker Sandboxes policies with: sbx policy reset
   init                Create a starter AGENTS.md in the target repo
@@ -504,6 +568,7 @@ done
 case "${1:-help}" in
   up)       shift; cmd_up "$@" ;;
   doctor)   shift; cmd_doctor "$@" ;;
+  status)   shift; cmd_status "$@" ;;
   attach)   shift; cmd_attach "$@" ;;
   init)     shift; cmd_init "$@" ;;
   shell)    shift; cmd_shell "$@" ;;
