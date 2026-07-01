@@ -38,7 +38,7 @@ On macOS and Windows, follow the [official install guide](https://docs.docker.co
 Then grab this tool:
 
 ```bash
-git clone https://github.com/YOUR_USER/claude-sbx.git
+git clone https://github.com/Trivo25/claude-sbx.git
 cd claude-sbx
 # optional: put it on your PATH
 ln -s "$PWD/claude-sbx" ~/.local/bin/claude-sbx

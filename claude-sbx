@@ -6,7 +6,7 @@
 # from your host. In clone mode it commits to a private clone; your repo is
 # mounted read-only and you review its work with a normal `git fetch`.
 #
-# Repo: https://github.com/YOUR_USER/claude-sbx   License: MIT
+# Repo: https://github.com/Trivo25/claude-sbx   License: MIT
 
 set -euo pipefail
 
