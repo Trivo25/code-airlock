@@ -116,6 +116,30 @@ Credentials should go through Docker Sandboxes' secret manager or host-side auth
 
 Sandboxes do not carry user-level config such as `~/.claude` or `~/.codex` into the VM by design. Put project-level config in the repo if the agent needs it.
 
+### GitHub credentials
+
+Code Airlock does not need GitHub credentials for the normal review loop. In clone mode, the agent commits inside the sandbox, then your host pulls those commits with:
+
+```bash
+code-airlock fetch
+code-airlock diff
+code-airlock merge
+```
+
+Give the sandbox GitHub access only if you want the agent to use `gh`, open pull requests, create issues, or push directly from inside the VM:
+
+```bash
+echo "$(gh auth token)" | sbx secret set -g github
+```
+
+Global secrets apply when a sandbox is created. For an existing sandbox, either recreate it or scope the token to that sandbox:
+
+```bash
+echo "$(gh auth token)" | sbx secret set sandbox-sbx-claude-sbx github
+```
+
+If you use SSH remotes, Docker Sandboxes can forward your host SSH agent into the sandbox when `SSH_AUTH_SOCK` is set. The private key stays on the host; sandboxed processes can request signatures but cannot read the key.
+
 ## Configuration
 
 Copy `sandbox.conf.example` to `sandbox.conf` and edit. You can set the sandbox name, the agent, the target repo, and the network allowlist. `sandbox.conf` is git-ignored.
