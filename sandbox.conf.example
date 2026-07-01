@@ -22,6 +22,9 @@
 # tmux session used by `code-airlock --tmux up`.
 # TMUX_SESSION=code-airlock-sbx-myproject
 
+# Attach immediately after starting a tmux-backed run. Set to 0 for unattended runs.
+# TMUX_ATTACH=1
+
 # Comma-separated network allowlist. Under `lockdown` (deny-all default),
 # the sandbox can reach only these hosts. Add the registries and APIs your
 # build actually needs. A few common extras are shown commented below.

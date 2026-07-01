@@ -167,10 +167,16 @@ Use `--tmux` to start the sandboxed agent inside a host-side tmux session:
 code-airlock --tmux up
 ```
 
-This keeps the terminal session alive if your SSH connection drops. Reattach later with:
+This attaches immediately so you can talk to the coding agent. To disconnect without stopping it, press `Ctrl-b`, then `d`. This detaches your terminal and leaves the agent running in the tmux session. Reattach later with:
 
 ```bash
 code-airlock attach
+```
+
+For an unattended server run, start the tmux session without attaching:
+
+```bash
+code-airlock --tmux-detached up
 ```
 
 The default session name is `code-airlock-<sandbox-name>`. Override it with:
@@ -179,8 +185,6 @@ The default session name is `code-airlock-<sandbox-name>`. Override it with:
 TMUX_SESSION=agent-work code-airlock --tmux up
 TMUX_SESSION=agent-work code-airlock attach
 ```
-
-To disconnect from tmux without stopping the coding agent, press `Ctrl-b`, then `d`. This detaches your terminal and leaves the agent running in the tmux session.
 
 For a visual review, use:
 
@@ -329,6 +333,7 @@ REPO_DIR=/absolute/path/to/repo
 GLOBAL_NETWORK_POLICY=balanced
 REVIEW_TOOL=vscode
 TMUX_SESSION=code-airlock-sbx-my-project
+TMUX_ATTACH=1
 ALLOW=api.anthropic.com,*.anthropic.com,github.com,*.github.com
 ```
 
@@ -358,7 +363,8 @@ Global option:
 | Option | What it does |
 | --- | --- |
 | `--dry-run` | Print commands instead of running them |
-| `--tmux` | Run `up` inside a host-side tmux session |
+| `--tmux` | Run `up` inside a host-side tmux session and attach |
+| `--tmux-detached` | Run `up` inside a detached host-side tmux session |
 
 ## Security Notes
 

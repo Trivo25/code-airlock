@@ -210,7 +210,9 @@ cmd_up_tmux() {
     sleep 1
     tmux has-session -t "$session" 2>/dev/null || die "tmux session '$session' exited immediately. Inspect tmux/server output with: tmux list-sessions"
   fi
-  [ "$TMUX_ATTACH" = 1 ] && attach_tmux_session "$session"
+  if [ "$TMUX_ATTACH" = 1 ]; then
+    attach_tmux_session "$session"
+  fi
 }
 
 attach_tmux_session() {
