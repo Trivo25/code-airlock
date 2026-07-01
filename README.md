@@ -35,7 +35,7 @@ sbx login
 
 On macOS and Windows, follow the [official install guide](https://docs.docker.com/ai/sandboxes/get-started/). At first login `sbx` asks you to pick a default network policy; **Balanced** or **Locked Down** is a good starting point for this workflow.
 
-If `sbx` asks for the global network policy during your first `code-airlock up`, choose **Balanced** or **Locked Down**. Code Airlock applies its per-sandbox allowlist after that policy exists.
+If the global network policy has not been initialized yet, Code Airlock runs `sbx policy init balanced` before starting the sandbox. Override this with `GLOBAL_NETWORK_POLICY=deny-all` or `GLOBAL_NETWORK_POLICY=allow-all`. Per-sandbox allowlists are applied by `lockdown` after the global policy exists.
 
 Then grab this tool:
 

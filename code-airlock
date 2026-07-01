@@ -18,6 +18,7 @@ CONF="$(cd "$(dirname "$0")" && pwd)/sandbox.conf"
 
 : "${AGENT:=claude}"                     # claude, codex, opencode, gemini, copilot, cursor, droid, kiro, shell
 REPO_DIR="${REPO_DIR:-$PWD}"             # repo the agent works on
+: "${GLOBAL_NETWORK_POLICY:=balanced}"   # allow-all, balanced, deny-all
 
 # Sandbox name derived from the repo folder, sanitized to a safe token.
 _repo_base="$(basename "$REPO_DIR")"
@@ -62,10 +63,27 @@ ensure_repo() {
 
 running() { sbx exec "$NAME" true >/dev/null 2>&1; }
 
+init_global_network_policy() {
+  info "Initializing Docker Sandboxes global network policy if needed: $GLOBAL_NETWORK_POLICY"
+  if policy_output="$(sbx policy init "$GLOBAL_NETWORK_POLICY" 2>&1)"; then
+    return 0
+  fi
+
+  case "$policy_output" in
+    *"already"*|*"initialized"*)
+      return 0
+      ;;
+    *)
+      printf '%s\n' "$policy_output" >&2
+      die "Could not initialize Docker Sandboxes network policy."
+      ;;
+  esac
+}
+
 apply_network() {
   info "Restricting network for '$NAME' to: $ALLOW"
   sbx policy allow network --sandbox "$NAME" "$ALLOW" \
-    || warn "Could not apply network rules yet. Check: sbx policy ls"
+    || warn "Could not apply network rules. Check: sbx policy ls"
 }
 
 current_branch() {
@@ -93,13 +111,13 @@ cmd_up() {
   ensure_repo
   running && die "Sandbox '$NAME' already exists. Use '$0 shell', or '$0 rm' to recreate."
 
-  info "If Docker Sandboxes asks for a global network policy, choose Balanced or Locked Down."
-  apply_network
+  init_global_network_policy
   info "Starting $AGENT in a microVM sandbox '$NAME' (clone mode)."
   info "Review its commits on your host with:  git fetch sandbox-$NAME"
   agent_hint
   warn "Full network isolation applies only under a balanced/deny-all default."
   warn "For strict isolation run once:  $0 lockdown"
+  info "First launch may take a few minutes while Docker creates the VM and prepares the agent kit."
 
   # --clone: agent works on a private clone; host repo mounted read-only.
   # Docker Sandboxes applies each agent's own startup defaults.

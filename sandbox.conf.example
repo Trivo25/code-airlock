@@ -11,6 +11,10 @@
 # Repo the agent operates on (default: the current directory)
 # REPO_DIR=/absolute/path/to/repo
 
+# Global Docker Sandboxes network policy to initialize on first use.
+# One of: allow-all, balanced, deny-all
+# GLOBAL_NETWORK_POLICY=balanced
+
 # Comma-separated network allowlist. Under `lockdown` (deny-all default),
 # the sandbox can reach only these hosts. Add the registries and APIs your
 # build actually needs. A few common extras are shown commented below.
