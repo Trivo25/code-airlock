@@ -1,5 +1,7 @@
 # code-airlock
 
+[![ShellCheck](https://github.com/Trivo25/code-airlock/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/Trivo25/code-airlock/actions/workflows/shellcheck.yml)
+
 Run Claude Code, Codex, OpenCode, or another coding agent in a disposable microVM, then review its work as normal git commits.
 
 ![Code Airlock demo](./animation.gif)
@@ -67,6 +69,23 @@ The installer writes to `~/.local/bin` by default. Choose another location with:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Trivo25/code-airlock/main/install.sh | PREFIX=/usr/local/bin sh
+```
+
+## Install - Agent
+
+Already using a coding agent? Send it this:
+
+```text
+Install Code Airlock in this environment, then run its first-run checks.
+
+Use:
+curl -fsSL https://raw.githubusercontent.com/Trivo25/code-airlock/main/install.sh | sh
+
+After install, make sure code-airlock is on PATH, then run:
+code-airlock doctor
+code-airlock --dry-run up
+
+Do not start a real sandbox or change network policy unless I explicitly ask.
 ```
 
 Run it from the repo you want the agent to work on:
