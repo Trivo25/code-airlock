@@ -1,0 +1,37 @@
+{
+  "name": "code-airlock",
+  "version": "0.1.0",
+  "description": "Run coding agents in disposable Docker Sandbox microVMs and review their work as git commits.",
+  "license": "MIT",
+  "homepage": "https://github.com/Trivo25/code-airlock#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Trivo25/code-airlock.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Trivo25/code-airlock/issues"
+  },
+  "bin": {
+    "code-airlock": "./code-airlock"
+  },
+  "files": [
+    "code-airlock",
+    "install.sh",
+    "sandbox.conf.example",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "ai",
+    "agents",
+    "sandbox",
+    "docker",
+    "codex",
+    "claude",
+    "opencode",
+    "microvm"
+  ],
+  "scripts": {
+    "test": "bash -n code-airlock && sh -n install.sh && shellcheck code-airlock install.sh"
+  }
+}

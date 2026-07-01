@@ -51,10 +51,30 @@ sbx login
 
 On macOS and Windows, follow Docker's [official install guide](https://docs.docker.com/ai/sandboxes/get-started/).
 
-Install Code Airlock:
+Install Code Airlock with npm:
+
+```bash
+npm install -g code-airlock
+```
+
+Or use the standalone shell installer:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Trivo25/code-airlock/main/install.sh | sh
+```
+
+The shell installer also adds a short `codelock` alias when that command is not already taken:
+
+```bash
+codelock up
+codelock status
+codelock attach
+```
+
+The npm package intentionally installs only `code-airlock`, because `codelock` is already an npm package name. Add a personal shell alias if you want the shorter command after npm install:
+
+```bash
+alias codelock=code-airlock
 ```
 
 Or clone it manually:
@@ -71,6 +91,13 @@ The installer writes to `~/.local/bin` by default. Choose another location with:
 curl -fsSL https://raw.githubusercontent.com/Trivo25/code-airlock/main/install.sh | PREFIX=/usr/local/bin sh
 ```
 
+Skip or rename the short alias:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Trivo25/code-airlock/main/install.sh | CODE_AIRLOCK_INSTALL_ALIAS=0 sh
+curl -fsSL https://raw.githubusercontent.com/Trivo25/code-airlock/main/install.sh | CODE_AIRLOCK_ALIAS=calock sh
+```
+
 ## Install - Agent
 
 Already using a coding agent? Send it this:
@@ -78,7 +105,10 @@ Already using a coding agent? Send it this:
 ```text
 Install Code Airlock in this environment, then run its first-run checks.
 
-Use:
+Use npm when available:
+npm install -g code-airlock
+
+If npm is unavailable, use:
 curl -fsSL https://raw.githubusercontent.com/Trivo25/code-airlock/main/install.sh | sh
 
 After install, make sure code-airlock is on PATH, then run:

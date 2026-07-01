@@ -5,6 +5,8 @@ repo="Trivo25/code-airlock"
 ref="${CODE_AIRLOCK_REF:-main}"
 prefix="${PREFIX:-$HOME/.local/bin}"
 target="$prefix/code-airlock"
+alias_name="${CODE_AIRLOCK_ALIAS:-codelock}"
+install_alias="${CODE_AIRLOCK_INSTALL_ALIAS:-1}"
 url="https://raw.githubusercontent.com/$repo/$ref/code-airlock"
 
 need() {
@@ -17,6 +19,7 @@ need() {
 need curl
 need chmod
 need mkdir
+need ln
 
 mkdir -p "$prefix"
 
@@ -29,6 +32,18 @@ fi
 chmod +x "$target"
 
 printf 'Installed code-airlock to %s\n' "$target"
+
+if [ "$install_alias" = 1 ]; then
+  alias_target="$prefix/$alias_name"
+  existing_alias="$(command -v "$alias_name" 2>/dev/null || true)"
+  if [ -z "$existing_alias" ] || [ "$existing_alias" = "$alias_target" ]; then
+    ln -sf "$target" "$alias_target"
+    printf 'Installed %s alias to %s\n' "$alias_name" "$alias_target"
+  else
+    printf 'Skipping %s alias: command already exists at %s\n' "$alias_name" "$existing_alias"
+    printf 'Use a shell alias instead: alias %s=code-airlock\n' "$alias_name"
+  fi
+fi
 
 case ":$PATH:" in
   *":$prefix:"*) ;;
