@@ -26,6 +26,7 @@ REPO_DIR="${REPO_DIR:-$PWD}"             # repo the agent works on
 : "${SEED_CONFIG:=0}"                    # 1 seeds curated user-level agent config
 : "${SEED_USER_CONFIG:=$SEED_CONFIG}"    # 1 copies user-level commands/agents/skills/instructions
 : "${SEED_PATHS:=}"                      # comma-separated extra host paths to copy under /home/user
+: "${FETCH_SUBMODULES:=1}"               # 1 imports initialized submodule commits from the sandbox on fetch
 
 # Sandbox name derived from the repo folder, sanitized to a safe token.
 _repo_base="$(basename "$REPO_DIR")"
@@ -257,6 +258,62 @@ sandbox_ref() {
 
 fetch_sandbox() {
   run_cmd git -C "$REPO_DIR" fetch "sandbox-$NAME"
+  fetch_sandbox_submodules
+}
+
+submodule_paths() {
+  # The snippet runs inside `git submodule foreach`, where Git sets $displaypath.
+  # shellcheck disable=SC2016
+  git -C "$REPO_DIR" submodule foreach --recursive --quiet 'printf "%s\n" "$displaypath"' 2>/dev/null || true
+}
+
+safe_token() {
+  printf '%s' "$1" | tr -c 'A-Za-z0-9._-' '-'
+}
+
+fetch_sandbox_submodules() {
+  [ "$FETCH_SUBMODULES" = 1 ] || return 0
+  [ -f "$REPO_DIR/.gitmodules" ] || return 0
+
+  submodule_path_list="$(submodule_paths)"
+  if [ -z "$submodule_path_list" ]; then
+    warn "Submodules are configured, but none are initialized locally. Run: git submodule update --init --recursive"
+    return 0
+  fi
+
+  tmpdir="${TMPDIR:-/tmp}/code-airlock-submodules-$NAME-$$"
+  info "Fetching sandbox submodule commits into initialized host submodules."
+  run_cmd mkdir -p "$tmpdir"
+
+  while IFS= read -r sm_path; do
+    [ -n "$sm_path" ] || continue
+
+    if [ "$DRY_RUN" != 1 ] && ! git -C "$REPO_DIR/$sm_path" rev-parse --git-dir >/dev/null 2>&1; then
+      warn "Skipping uninitialized submodule: $sm_path"
+      continue
+    fi
+
+    safe_path="$(safe_token "$sm_path")"
+    sandbox_bundle="/tmp/code-airlock-$safe_path.bundle"
+    host_bundle="$tmpdir/$safe_path.bundle"
+    remote_ref="refs/remotes/code-airlock/$NAME"
+
+    info "Fetching submodule '$sm_path' from sandbox into $remote_ref"
+    if ! run_sbx exec "$NAME" sh -lc "git -C $(printf '%q' "$sm_path") bundle create $(printf '%q' "$sandbox_bundle") HEAD >/dev/null"; then
+      warn "Could not create sandbox bundle for submodule '$sm_path'. Is the sandbox still available?"
+      continue
+    fi
+    if ! run_sbx cp "$NAME:$sandbox_bundle" "$host_bundle"; then
+      warn "Could not copy sandbox bundle for submodule '$sm_path'."
+      continue
+    fi
+    if ! run_cmd git -C "$REPO_DIR/$sm_path" fetch "$host_bundle" "HEAD:$remote_ref"; then
+      warn "Could not fetch sandbox bundle into host submodule '$sm_path'."
+      continue
+    fi
+  done <<EOF
+$submodule_path_list
+EOF
 }
 
 agents_file() {
@@ -627,7 +684,7 @@ Usage: $(basename "$0") [--dry-run] [--tmux|--tmux-detached] [--seed-config] <co
   status              Show this repo's sandbox and tmux session status
   attach              Attach to this repo's Code Airlock tmux session
   shell               Open a shell inside the running sandbox
-  fetch               git fetch the agent's commits (remote: sandbox-<name>)
+  fetch               Fetch sandbox commits, including initialized submodules
   diff  [base]        Fetch, then diff base..sandbox-<name>/base
   review [base]       Fetch, then open a visual git difftool review
   merge [base]        Fetch, then merge the agent's branch into base

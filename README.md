@@ -177,6 +177,14 @@ Code Airlock starts Docker Sandboxes with `--clone`:
 4. You fetch the sandbox branch into your local repo and review the diff.
 5. You merge only when you are satisfied.
 
+If initialized submodules exist, `fetch`, `diff`, `review`, and `merge` also try to import each sandbox submodule's `HEAD` commit into the matching host submodule. Submodule commits are fetched into:
+
+```text
+refs/remotes/code-airlock/<sandbox-name>
+```
+
+This lets the parent repo merge point at submodule commits that the host can actually check out. Disable this with `FETCH_SUBMODULES=0` for parent-only fetch behavior.
+
 This means uncommitted sandbox edits do not come back through the normal flow. If needed, enter the sandbox and commit first:
 
 ```bash
@@ -418,6 +426,7 @@ TMUX_SESSION=code-airlock-sbx-my-project
 TMUX_ATTACH=1
 SEED_CONFIG=0
 SEED_PATHS=$HOME/.codex/config.toml,$HOME/.claude/settings.json
+FETCH_SUBMODULES=1
 ALLOW=api.anthropic.com,*.anthropic.com,github.com,*.github.com
 ```
 
@@ -433,7 +442,7 @@ ALLOW=api.anthropic.com,*.anthropic.com,github.com,*.github.com
 | `attach` | Attach to this repo's Code Airlock tmux session |
 | `init` | Create a starter `AGENTS.md` in the target repo |
 | `shell` | Open a shell inside the running sandbox |
-| `fetch` | Fetch the sandbox commits into your local repo |
+| `fetch` | Fetch the sandbox commits into your local repo, including initialized submodule commits |
 | `diff [base]` | Fetch, then show `base..sandbox-<name>/base` |
 | `review [base]` | Fetch, then open a visual Git difftool review |
 | `merge [base]` | Fetch, then merge the sandbox branch into `base` |
