@@ -22,6 +22,12 @@ Code Airlock keeps the workflow simple:
 | Limit network access | Can apply a configurable allowlist for model APIs and package registries |
 | Switch agents | Uses `AGENT=claude`, `AGENT=codex`, `AGENT=opencode`, and other Docker Sandbox agents |
 
+## Why Let the Agent Run Freely?
+
+Coding agents are most effective when they can use the tools needed to finish the task: install dependencies, inspect generated files, run test suites, start local services, read logs, and iterate on failures. Over-constraining every shell command often turns the agent into a slower autocomplete loop.
+
+Code Airlock moves the main safety boundary below the agent. The agent can work with more autonomy inside a disposable microVM, while the host repo stays read-only and the resulting changes still come back as commits for review.
+
 ## Why Not Just Use `sbx` Directly?
 
 You can. Code Airlock is intentionally a thin wrapper around Docker Sandboxes, not a replacement for it.
@@ -36,6 +42,14 @@ Use `sbx` directly when you want full control over sandbox lifecycle, policies, 
 - a documented credential and network-policy path for Claude Code, Codex, and OpenCode
 
 The point is to make the safe workflow boring and repeatable while still leaving `sbx` available underneath.
+
+## Why Not Just Configure the Agent Harness Better?
+
+Agent harness rules are useful, and Code Airlock is meant to work with them. Codex approvals, Claude Code permissions, OpenCode settings, `AGENTS.md`, and custom prompts all help shape what the agent should do.
+
+Those rules are still policy inside the agent process. They do not give you a disposable VM, a read-only host repo, a separate clone for agent commits, or a host-side review step before changes land. They also do not provide a shared wrapper for Claude Code, Codex, OpenCode, and other agents.
+
+Code Airlock treats harness rules as the first layer and Docker Sandboxes as the boundary underneath it. The agent can be configured to behave well; the sandbox limits what happens when it does not.
 
 ## Quick Start
 
