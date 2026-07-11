@@ -850,7 +850,9 @@ section + section {
 .demo-frame .term-bar {
   border-bottom: 1px solid var(--term-border);
 }
-.demo-frame img {
+.demo-frame img,
+.demo-frame video {
+  display: block;
   width: 100%;
   height: auto;
 }
