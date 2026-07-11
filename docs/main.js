@@ -196,28 +196,45 @@ if (diagram && !reducedMotion) {
   watcher.observe(diagram);
 }
 
-// teams pilot form: compose the answers into a prefilled email (no backend)
+// demo video: no autoplay under reduced motion; controls stay available
+let demoVideo = document.querySelector(".demo-frame video");
+if (demoVideo && reducedMotion) {
+  demoVideo.removeAttribute("autoplay");
+  demoVideo.removeAttribute("loop");
+  demoVideo.pause();
+  demoVideo.addEventListener(
+    "loadeddata",
+    () => demoVideo.paused || demoVideo.pause(),
+    { once: true },
+  );
+}
+
+// teams pilot form: submit to Formspree; without JS the form POSTs natively
 let teamsForm = document.getElementById("teams-form");
 if (teamsForm) {
-  teamsForm.addEventListener("submit", (e) => {
+  teamsForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    let btn = teamsForm.querySelector('button[type="submit"]');
+    let hint = teamsForm.querySelector(".form-hint");
     let f = new FormData(teamsForm);
-    let agents = f.getAll("agents").join(", ") || "none listed";
-    let body = [
-      "Code Airlock Teams pilot request",
-      "",
-      "Work email: " + f.get("email"),
-      "Company size: " + f.get("size"),
-      "Developers using agents: " + f.get("devs"),
-      "Current agents: " + agents,
-      "Where agents run today: " + f.get("exec"),
-      "Security or compliance requirements: " +
-        (String(f.get("reqs") || "").trim() || "none listed"),
-    ].join("\n");
-    window.location.href =
-      "mailto:florian@technotro.com?subject=" +
-      encodeURIComponent("Code Airlock Teams pilot") +
-      "&body=" +
-      encodeURIComponent(body);
+    f.set("agents", f.getAll("agents").join(", ") || "none listed");
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+    try {
+      let res = await fetch(teamsForm.action, {
+        method: "POST",
+        body: f,
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      teamsForm.innerHTML =
+        '<p class="form-success">Request received. We will follow up at the address you provided.</p>';
+    } catch {
+      btn.disabled = false;
+      btn.textContent = "Request pilot access";
+      hint.textContent =
+        "Sending failed. Please retry, or email florian@technotro.com directly.";
+      hint.classList.add("form-error");
+    }
   });
 }

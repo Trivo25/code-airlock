@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Page not found - Code Airlock</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#ECE8DC" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .nf {
+      min-height: 100dvh;
+      display: grid;
+      place-content: center;
+      text-align: center;
+      gap: 14px;
+      padding: 24px;
+    }
+    .nf .mark { margin-inline: auto; }
+    .nf-code {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--accent-ink);
+      letter-spacing: 0.14em;
+    }
+    .nf p { color: var(--muted); margin-inline: auto; }
+    .nf .btn { margin: 14px auto 0; }
+  </style>
+</head>
+<body>
+  <main class="nf">
+    <svg class="mark" width="34" height="34" viewBox="0 0 22 22" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="7" height="19" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <rect x="13.5" y="1.5" width="7" height="19" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="11" cy="11" r="1.8" fill="#f5a524"/>
+    </svg>
+    <span class="nf-code">404</span>
+    <h1>Page not found</h1>
+    <p>Nothing is docked at this address.</p>
+    <a class="btn btn-primary" href="./">Back to Code Airlock</a>
+  </main>
+</body>
+</html>

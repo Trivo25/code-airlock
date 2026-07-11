@@ -6,10 +6,13 @@ Static landing page for [code-airlock](https://github.com/Trivo25/code-airlock).
 
 - `index.html` page content
 - `styles.css` all styling
-- `main.js` copy buttons, terminal tabs, hero diagram animation, star count
-- `favicon.svg`, `og.png` icons and social preview
+- `main.js` copy buttons, terminal tabs, hero diagram animation, star counts, teams form
+- `favicon.svg`, `apple-touch-icon.png`, `og.png` icons and social preview
 - `fonts/` self-hosted Geist and Geist Mono (variable, latin subset)
-- `animation.gif` demo recording, copied from the repo root
+- `demo.mp4`, `demo-poster.jpg` demo recording (trimmed and encoded from the repo's `animation.gif`)
+- `robots.txt`, `sitemap.xml`, `404.html` crawler and error plumbing
+
+The Teams pilot form posts to Formspree (`https://formspree.io/f/mvzepkbo`); change the `action` in `index.html` to rotate the endpoint.
 
 ## Local development
 

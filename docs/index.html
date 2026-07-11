@@ -22,6 +22,7 @@
   <meta name="twitter:image" content="https://trivo25.github.io/code-airlock/og.png" />
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preload" href="fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="fonts/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="styles.css" />
@@ -379,8 +380,12 @@
             <span class="term-dot" aria-hidden="true"></span>
             <span class="term-title">code-airlock demo</span>
           </div>
-          <img src="animation.gif" width="960" height="572" loading="lazy"
-               alt="Terminal recording of the code-airlock workflow: starting a coding agent in a sandbox and reviewing its commits from the host." />
+          <video src="demo.mp4" width="960" height="572" poster="demo-poster.jpg"
+                 autoplay muted loop playsinline controls preload="metadata"
+                 aria-label="Terminal recording of the code-airlock workflow: starting a coding agent in a sandbox and reviewing its commits from the host.">
+            Your browser cannot play this video.
+            <a href="https://github.com/Trivo25/code-airlock#readme">Watch the recording in the README.</a>
+          </video>
           <figcaption>Recorded terminal session from the project README.</figcaption>
         </figure>
       </div>
@@ -468,7 +473,8 @@
           <h2>Using coding agents at&nbsp;work?</h2>
           <p>Join the Code Airlock Teams pilot for centralized policy, audit logs, GitHub workflows, and managed runners.</p>
         </div>
-        <form class="teams-form reveal" id="teams-form">
+        <form class="teams-form reveal" id="teams-form" action="https://formspree.io/f/mvzepkbo" method="POST">
+          <input type="hidden" name="_subject" value="Code Airlock Teams pilot" />
           <div class="field">
             <label for="tf-email">Work email</label>
             <input id="tf-email" name="email" type="email" required autocomplete="email" placeholder="you@company.com" />
@@ -518,9 +524,62 @@
             <textarea id="tf-reqs" name="reqs" rows="3" placeholder="SOC 2, on-prem only, audit retention, ..."></textarea>
           </div>
           <button type="submit" class="btn btn-primary">Request pilot access</button>
-          <p class="form-hint">Opens your email client with the answers prefilled. Nothing is stored on this site.</p>
+          <p class="form-hint">Handled by Formspree and used only to follow up about the pilot.</p>
         </form>
       </div>
+    </section>
+
+    <!-- faq -->
+    <section class="faq" id="faq">
+      <div class="container">
+        <h2 class="reveal">Common questions</h2>
+        <div class="faq-list reveal">
+          <details>
+            <summary>Why let the agent run freely at all?</summary>
+            <p>Coding agents are most effective when they can install dependencies, run test suites, start services, read logs, and iterate on failures. Approving every shell command turns the agent into a slower autocomplete loop. Code Airlock moves the safety boundary below the agent instead: more autonomy inside a disposable microVM, while the host repository stays read-only.</p>
+          </details>
+          <details>
+            <summary>Why not just use sbx directly?</summary>
+            <p>You can. Code Airlock is intentionally a thin wrapper around Docker Sandboxes, not a replacement. Use sbx when you want full control over sandbox lifecycle, policies, kits, and one-off experiments. Use Code Airlock when you want the common coding-agent loop already wired together: clone mode by default, stable sandbox naming, one-command startup, and the fetch, diff, review, merge, and pr commands.</p>
+          </details>
+          <details>
+            <summary>Why not just configure the agent's own permissions better?</summary>
+            <p>Agent permissions, project instructions, and approval rules stay useful, and Code Airlock works with them. But they are policy inside the agent process. They do not give you a disposable VM, a read-only host repository, a separate clone for agent commits, or a host-side review step. The sandbox limits what happens when the agent does not behave as configured.</p>
+          </details>
+          <details>
+            <summary>What happens to work the agent does not commit?</summary>
+            <p>Uncommitted sandbox edits do not come back through the normal fetch and review flow. Open a shell with code-airlock shell, commit the work, and fetch again. Removing a sandbox deletes its private clone, so fetch or push anything you want to keep first.</p>
+          </details>
+        </div>
+      </div>
+      <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Why let the agent run freely at all?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Coding agents are most effective when they can install dependencies, run test suites, start services, read logs, and iterate on failures. Code Airlock moves the safety boundary below the agent: more autonomy inside a disposable microVM, while the host repository stays read-only." }
+          },
+          {
+            "@type": "Question",
+            "name": "Why not just use sbx directly?",
+            "acceptedAnswer": { "@type": "Answer", "text": "You can. Code Airlock is intentionally a thin wrapper around Docker Sandboxes that wires the common coding-agent loop together: clone mode by default, stable sandbox naming, one-command startup, and the fetch, diff, review, merge, and pr commands." }
+          },
+          {
+            "@type": "Question",
+            "name": "Why not just configure the agent's own permissions better?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Agent permissions and approval rules stay useful, but they are policy inside the agent process. They do not give you a disposable VM, a read-only host repository, a separate clone for agent commits, or a host-side review step." }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens to work the agent does not commit?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Uncommitted sandbox edits do not come back through fetch and review. Open a shell with code-airlock shell, commit the work, and fetch again. Removing a sandbox deletes its private clone, so fetch or push anything you want to keep first." }
+          }
+        ]
+      }
+      </script>
     </section>
 
     <!-- requirements -->

@@ -1402,6 +1402,13 @@ fieldset.field legend {
   font-size: 0.8rem;
   color: var(--muted);
 }
+.form-error {
+  color: #a3271f;
+}
+.form-success {
+  color: var(--ok);
+  font-weight: 500;
+}
 
 @media (max-width: 860px) {
   .teams-grid {
@@ -1420,6 +1427,47 @@ fieldset.field legend {
     width: 100%;
     justify-content: center;
   }
+}
+
+/* faq */
+.faq-list {
+  margin-top: 40px;
+  max-width: 780px;
+  display: grid;
+  gap: 12px;
+}
+.faq-list details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.faq-list summary {
+  cursor: pointer;
+  padding: 15px 18px;
+  font-weight: 500;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+.faq-list summary::-webkit-details-marker {
+  display: none;
+}
+.faq-list summary::after {
+  content: "+";
+  font-family: var(--mono);
+  color: var(--accent-ink);
+  flex-shrink: 0;
+}
+.faq-list details[open] summary::after {
+  content: "-";
+}
+.faq-list details p {
+  padding: 0 18px 16px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  max-width: none;
 }
 
 /* quick start footnote */

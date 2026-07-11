@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://trivo25.github.io/code-airlock/sitemap.xml
