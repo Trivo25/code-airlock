@@ -195,3 +195,29 @@ if (diagram && !reducedMotion) {
   );
   watcher.observe(diagram);
 }
+
+// teams pilot form: compose the answers into a prefilled email (no backend)
+let teamsForm = document.getElementById("teams-form");
+if (teamsForm) {
+  teamsForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    let f = new FormData(teamsForm);
+    let agents = f.getAll("agents").join(", ") || "none listed";
+    let body = [
+      "Code Airlock Teams pilot request",
+      "",
+      "Work email: " + f.get("email"),
+      "Company size: " + f.get("size"),
+      "Developers using agents: " + f.get("devs"),
+      "Current agents: " + agents,
+      "Where agents run today: " + f.get("exec"),
+      "Security or compliance requirements: " +
+        (String(f.get("reqs") || "").trim() || "none listed"),
+    ].join("\n");
+    window.location.href =
+      "mailto:florian@technotro.com?subject=" +
+      encodeURIComponent("Code Airlock Teams pilot") +
+      "&body=" +
+      encodeURIComponent(body);
+  });
+}

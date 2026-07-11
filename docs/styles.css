@@ -840,7 +840,7 @@ section + section {
 
 /* demo gif (dark frame around a dark recording) */
 .demo-frame {
-  margin-top: 40px;
+  margin: 40px auto 0;
   border: 1px solid var(--term-border);
   border-radius: var(--radius);
   overflow: hidden;
@@ -1308,5 +1308,116 @@ section + section {
   }
   .nav-menu > a:not(.btn) {
     border-bottom-color: var(--chamber-border);
+  }
+}
+
+/* teams pilot */
+.teams-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 64px;
+  align-items: start;
+}
+.teams-copy p {
+  color: var(--muted);
+  margin-top: 16px;
+}
+.teams-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  display: grid;
+  gap: 20px;
+  box-shadow: 0 1px 2px rgba(27, 28, 30, 0.04);
+}
+.field {
+  display: grid;
+  gap: 7px;
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.field label,
+.field legend {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.optional {
+  color: var(--muted);
+  font-weight: 400;
+}
+.field input[type="email"],
+.field select,
+.field textarea {
+  font: inherit;
+  font-size: 0.92rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 9px 12px;
+  width: 100%;
+}
+.field textarea {
+  resize: vertical;
+}
+.field ::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+fieldset.field {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+fieldset.field legend {
+  margin-bottom: 8px;
+  padding: 0;
+}
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.choice input {
+  accent-color: var(--accent-ink);
+  width: 15px;
+  height: 15px;
+}
+.teams-form .btn {
+  justify-self: start;
+}
+.form-hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+@media (max-width: 860px) {
+  .teams-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+}
+@media (max-width: 480px) {
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+  .teams-form {
+    padding: 20px;
+  }
+  .teams-form .btn {
+    width: 100%;
+    justify-content: center;
   }
 }

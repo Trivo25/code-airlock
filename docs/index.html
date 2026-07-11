@@ -60,6 +60,7 @@
         <a href="#how-it-works">How it works</a>
         <a href="#quick-start">Quick start</a>
         <a href="#security">Security</a>
+        <a href="#teams">Teams</a>
         <a class="btn btn-primary btn-sm" href="https://github.com/Trivo25/code-airlock" target="_blank" rel="noopener">
           <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
           GitHub<span class="star-count" hidden></span>
@@ -454,6 +455,68 @@
           </div>
         </div>
         <p class="sec-link reveal"><a class="ext-link" href="https://github.com/Trivo25/code-airlock#security-notes" target="_blank" rel="noopener">Full security notes in the README<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.3" d="M4 2h6v6M10 2L2 10"/></svg></a></p>
+      </div>
+    </section>
+
+    <!-- teams pilot -->
+    <section class="teams" id="teams">
+      <div class="container teams-grid">
+        <div class="teams-copy reveal">
+          <h2>Using coding agents at&nbsp;work?</h2>
+          <p>Join the Code Airlock Teams pilot for centralized policy, audit logs, GitHub workflows, and managed runners.</p>
+        </div>
+        <form class="teams-form reveal" id="teams-form">
+          <div class="field">
+            <label for="tf-email">Work email</label>
+            <input id="tf-email" name="email" type="email" required autocomplete="email" placeholder="you@company.com" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="tf-size">Company size</label>
+              <select id="tf-size" name="size">
+                <option>1-10</option>
+                <option>11-50</option>
+                <option>51-200</option>
+                <option>201-1000</option>
+                <option>1000+</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="tf-devs">Developers using agents</label>
+              <select id="tf-devs" name="devs">
+                <option>1-5</option>
+                <option>6-20</option>
+                <option>21-100</option>
+                <option>100+</option>
+              </select>
+            </div>
+          </div>
+          <fieldset class="field">
+            <legend>Current agents</legend>
+            <div class="choice-row">
+              <label class="choice"><input type="checkbox" name="agents" value="Claude Code" />Claude Code</label>
+              <label class="choice"><input type="checkbox" name="agents" value="Codex" />Codex</label>
+              <label class="choice"><input type="checkbox" name="agents" value="OpenCode" />OpenCode</label>
+              <label class="choice"><input type="checkbox" name="agents" value="Gemini" />Gemini</label>
+              <label class="choice"><input type="checkbox" name="agents" value="Cursor" />Cursor</label>
+              <label class="choice"><input type="checkbox" name="agents" value="Other" />Other</label>
+            </div>
+          </fieldset>
+          <fieldset class="field">
+            <legend>Where do agents run today?</legend>
+            <div class="choice-row">
+              <label class="choice"><input type="radio" name="exec" value="Local machines" checked />Local machines</label>
+              <label class="choice"><input type="radio" name="exec" value="Remote servers" />Remote servers</label>
+              <label class="choice"><input type="radio" name="exec" value="Both" />Both</label>
+            </div>
+          </fieldset>
+          <div class="field">
+            <label for="tf-reqs">Security or compliance requirements <span class="optional">(optional)</span></label>
+            <textarea id="tf-reqs" name="reqs" rows="3" placeholder="SOC 2, on-prem only, audit retention, ..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Request pilot access</button>
+          <p class="form-hint">Opens your email client with the answers prefilled. Nothing is stored on this site.</p>
+        </form>
       </div>
     </section>
 
