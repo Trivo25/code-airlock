@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Code Airlock - Run coding agents inside disposable microVMs</title>
+  <meta name="description" content="Run Claude Code, Codex, OpenCode, and other coding agents inside disposable Docker Sandbox microVMs, then review their work as ordinary Git commits." />
+  <!-- Update the canonical URL if the site is deployed somewhere other than GitHub Pages -->
+  <link rel="canonical" href="https://trivo25.github.io/code-airlock/" />
+  <meta name="theme-color" content="#FAF9F6" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Code Airlock - Run coding agents inside disposable microVMs" />
+  <meta property="og:description" content="Run Claude Code, Codex, OpenCode, and other coding agents inside disposable Docker Sandbox microVMs, then review their work as ordinary Git commits." />
+  <meta property="og:url" content="https://trivo25.github.io/code-airlock/" />
+  <meta property="og:image" content="https://trivo25.github.io/code-airlock/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Code Airlock - Run coding agents inside disposable microVMs" />
+  <meta name="twitter:description" content="Run Claude Code, Codex, OpenCode, and other coding agents inside disposable Docker Sandbox microVMs, then review their work as ordinary Git commits." />
+  <meta name="twitter:image" content="https://trivo25.github.io/code-airlock/og.png" />
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preload" href="fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="fonts/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="styles.css" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Code Airlock",
+    "description": "A small wrapper around Docker Sandboxes that runs Claude Code, Codex, OpenCode, and other coding agents inside disposable microVMs, then brings their work back as Git commits for review.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "macOS, Linux, Windows",
+    "url": "https://github.com/Trivo25/code-airlock",
+    "license": "https://github.com/Trivo25/code-airlock/blob/main/LICENSE",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="nav" id="top">
+    <div class="container nav-inner">
+      <a class="wordmark" href="#top" aria-label="Code Airlock, back to top">
+        <svg class="mark" width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+          <rect x="1.5" y="1.5" width="7" height="19" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="13.5" y="1.5" width="7" height="19" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="11" cy="11" r="1.8" fill="var(--accent)"/>
+        </svg>
+        <span>Code Airlock</span>
+      </a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Menu">
+        <span aria-hidden="true"></span><span aria-hidden="true"></span>
+      </button>
+      <nav id="nav-menu" class="nav-menu" aria-label="Main">
+        <a href="#how-it-works">How it works</a>
+        <a href="#quick-start">Quick start</a>
+        <a href="#security">Security</a>
+        <a class="btn btn-primary btn-sm" href="https://github.com/Trivo25/code-airlock" target="_blank" rel="noopener">
+          <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          GitHub<span class="star-count" hidden></span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- hero -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <h1>Let coding agents run. Keep your machine behind the&nbsp;airlock.</h1>
+          <p class="hero-sub">Run Claude Code, Codex, OpenCode, and other coding agents inside disposable Docker Sandbox microVMs. Review their work as ordinary Git commits before anything reaches your local branch.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://github.com/Trivo25/code-airlock" target="_blank" rel="noopener">View on GitHub</a>
+            <div class="install-chip">
+              <code>npm install -g code-airlock</code>
+              <button class="copy-btn" type="button" data-copy="npm install -g code-airlock" aria-label="Copy install command">
+                <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" d="M5.5 5.5h8v8h-8z"/><path fill="none" stroke="currentColor" stroke-width="1.4" d="M10.5 5.5v-3h-8v8h3"/></svg>
+              </button>
+              <span class="chip-note">MIT licensed · Open source</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- animated architecture diagram: host -> clone -> microVM -> commits -> airlock review -->
+        <div class="hero-visual">
+          <div class="diagram merged" id="flow-diagram" role="img"
+               aria-label="Architecture diagram. The host repository stays read-only. Docker creates a private clone inside a disposable microVM, where the coding agent installs packages, runs tests, and commits. The commits pass back through fetch, diff, and review checkpoints, and merge only when the developer approves.">
+            <div class="return-rail" aria-hidden="true"></div>
+
+            <div class="zone zone-host" data-step="0">
+              <span class="zone-tag">Host</span>
+              <div class="zone-row">
+                <code class="path">~/code/my-project</code>
+                <span class="state state-locked" id="host-state">read-only while agent runs</span>
+              </div>
+              <div class="zone-row review-chips" aria-hidden="true">
+                <span class="chip">fetch</span><span class="chip">diff</span><span class="chip">review</span><span class="chip">merge</span>
+              </div>
+            </div>
+
+            <div class="connector" data-step="2" aria-hidden="true">
+              <span class="line"></span>
+              <span class="conn-label">private clone</span>
+            </div>
+
+            <div class="zone zone-vm" data-step="1">
+              <span class="zone-tag zone-tag-accent">Disposable microVM</span>
+              <div class="zone-row">
+                <code class="path">sandbox-sbx-my-project</code>
+                <span class="state state-running" id="vm-state">running</span>
+              </div>
+              <div class="vm-activity">
+                <div class="act" data-step="3"><span class="prompt">$</span> npm install <span class="dim">&amp;&amp; npm test</span></div>
+                <div class="act" data-step="3"><span class="dim">agent: claude · edits files, reads logs, iterates</span></div>
+                <div class="act commit" data-step="4"><span class="hash">a41f2c9</span> add pagination to users endpoint</div>
+                <div class="act commit" data-step="4"><span class="hash">c7d03be</span> fix failing pagination test</div>
+              </div>
+            </div>
+
+            <div class="connector" data-step="5" aria-hidden="true">
+              <span class="line"></span>
+              <span class="conn-label">agent commits</span>
+            </div>
+
+            <div class="zone zone-airlock" data-step="5">
+              <span class="zone-tag">Airlock</span>
+              <div class="checkpoints">
+                <span class="checkpoint passed" data-step="5">fetch</span>
+                <span class="checkpoint passed" data-step="5">diff</span>
+                <span class="checkpoint passed" data-step="5">review</span>
+                <span class="checkpoint checkpoint-merge passed" data-step="6">merge</span>
+              </div>
+              <p class="airlock-note" data-step="6">You decide when it lands on your branch.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- problem / solution -->
+    <section class="why" id="why">
+      <div class="container two-col">
+        <div class="reveal">
+          <h2>Agents work better with room to work</h2>
+          <p>Coding agents are most useful when they can install dependencies, run test suites, inspect generated files, start local services, read logs, and iterate on failures. Approving every shell command turns the agent into a slower autocomplete loop.</p>
+        </div>
+        <div class="reveal">
+          <h2>That freedom needs a stronger boundary</h2>
+          <p>Code Airlock places the isolation boundary below the agent's own permission system. The agent runs inside a disposable microVM with a private clone of your repository. The host checkout stays read-only, and every change comes back as a Git commit for review.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- benefits -->
+    <section class="benefits" id="benefits">
+      <div class="container">
+        <h2 class="reveal">Why use it</h2>
+        <div class="benefit-grid">
+          <div class="benefit reveal">
+            <svg class="benefit-icon" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+              <rect x="2" y="4" width="24" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M7 11l4 3-4 3" fill="none" stroke="var(--accent-ink)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M13 17h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <h3>Run agents unattended</h3>
+            <p>Start an agent inside a sandbox and let it work through a task with fewer approval interruptions. It can install packages, run commands, and start services inside the VM.</p>
+          </div>
+          <div class="benefit reveal">
+            <svg class="benefit-icon" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+              <rect x="3" y="3" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M6 14l8-8M6 9l3-3M11 14l3-3" stroke="currentColor" stroke-width="1" opacity="0.55"/>
+              <rect x="14" y="14" width="11" height="11" rx="2" fill="none" stroke="var(--accent-ink)" stroke-width="1.5"/>
+              <path d="M17 3h4M25 7v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+            </svg>
+            <h3>Keep the host repository read-only</h3>
+            <p>Clone mode gives the sandbox a private repository clone. The agent commits there, and it cannot directly modify your host checkout while it runs.</p>
+          </div>
+          <div class="benefit reveal">
+            <svg class="benefit-icon" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+              <path d="M5 23V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="5" cy="9" r="2.4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="5" cy="19" r="2.4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="19" cy="9" r="2.4" fill="none" stroke="var(--accent-ink)" stroke-width="1.5"/>
+              <path d="M19 11.5c0 5-8 3-11.7 5.2" fill="none" stroke="var(--accent-ink)" stroke-width="1.5"/>
+            </svg>
+            <h3>Review ordinary Git commits</h3>
+            <p>Fetch the sandbox branch, inspect the diff, open a visual review in your difftool, and merge only after you approve the changes.</p>
+          </div>
+          <div class="benefit reveal">
+            <svg class="benefit-icon" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+              <circle cx="14" cy="14" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="4.5" cy="5" r="2" fill="none" stroke="var(--accent-ink)" stroke-width="1.5"/>
+              <circle cx="23.5" cy="5" r="2" fill="none" stroke="var(--accent-ink)" stroke-width="1.5"/>
+              <circle cx="4.5" cy="23" r="2" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"/>
+              <circle cx="23.5" cy="23" r="2" fill="none" stroke="var(--accent-ink)" stroke-width="1.5"/>
+              <path d="M6 6.6l5.7 5.2M22 6.6l-5.7 5.2M22 21.4l-5.7-5.2" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M6 21.4l5.7-5.2" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 3" opacity="0.4"/>
+            </svg>
+            <h3>Control network access</h3>
+            <p>Use Docker Sandbox network policies and a configurable allowlist for model APIs, package registries, GitHub, and other services the task actually needs.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- how it works -->
+    <section class="how" id="how-it-works">
+      <div class="container">
+        <h2 class="reveal">How it works</h2>
+        <ol class="steps">
+          <li class="step reveal">
+            <span class="step-num" aria-hidden="true">01</span>
+            <div class="step-body">
+              <h3>Launch</h3>
+              <div class="cmd"><code>code-airlock up</code>
+                <button class="copy-btn" type="button" data-copy="code-airlock up" aria-label="Copy command: code-airlock up">
+                  <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" d="M5.5 5.5h8v8h-8z"/><path fill="none" stroke="currentColor" stroke-width="1.4" d="M10.5 5.5v-3h-8v8h3"/></svg>
+                </button>
+              </div>
+              <p>Code Airlock starts the selected agent in a Docker Sandbox microVM.</p>
+            </div>
+          </li>
+          <li class="step reveal">
+            <span class="step-num" aria-hidden="true">02</span>
+            <div class="step-body">
+              <h3>Clone</h3>
+              <p>Docker creates a private clone of the current repository inside the sandbox. Your host checkout stays read-only.</p>
+            </div>
+          </li>
+          <li class="step reveal">
+            <span class="step-num" aria-hidden="true">03</span>
+            <div class="step-body">
+              <h3>Work</h3>
+              <p>The agent installs dependencies, edits files, runs tests, inspects errors, and commits its work inside the clone.</p>
+            </div>
+          </li>
+          <li class="step reveal">
+            <span class="step-num" aria-hidden="true">04</span>
+            <div class="step-body">
+              <h3>Review</h3>
+              <div class="cmd"><code>code-airlock fetch<br>code-airlock diff<br>code-airlock review</code>
+                <button class="copy-btn" type="button" data-copy="code-airlock fetch&#10;code-airlock diff&#10;code-airlock review" aria-label="Copy review commands">
+                  <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" d="M5.5 5.5h8v8h-8z"/><path fill="none" stroke="currentColor" stroke-width="1.4" d="M10.5 5.5v-3h-8v8h3"/></svg>
+                </button>
+              </div>
+              <p>The sandbox commits are fetched into the host repository for inspection, as a normal Git branch.</p>
+            </div>
+          </li>
+          <li class="step reveal">
+            <span class="step-num" aria-hidden="true">05</span>
+            <div class="step-body">
+              <h3>Merge</h3>
+              <div class="cmd"><code>code-airlock merge</code>
+                <button class="copy-btn" type="button" data-copy="code-airlock merge" aria-label="Copy command: code-airlock merge">
+                  <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" d="M5.5 5.5h8v8h-8z"/><path fill="none" stroke="currentColor" stroke-width="1.4" d="M10.5 5.5v-3h-8v8h3"/></svg>
+                </button>
+              </div>
+              <p>You decide when the changes are ready to enter your local branch.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- terminal quick start -->
+    <section class="quickstart" id="quick-start">
+      <div class="container">
+        <h2 class="reveal">Quick start</h2>
+        <p class="section-sub reveal">One install. One command to launch, three to review.</p>
+        <div class="terminal reveal">
+          <div class="term-bar">
+            <span class="term-dot" aria-hidden="true"></span>
+            <span class="term-dot" aria-hidden="true"></span>
+            <span class="term-dot" aria-hidden="true"></span>
+            <span class="term-title">~/code/my-project</span>
+            <button class="copy-btn term-copy" type="button" aria-label="Copy commands from this tab">
+              <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" d="M5.5 5.5h8v8h-8z"/><path fill="none" stroke="currentColor" stroke-width="1.4" d="M10.5 5.5v-3h-8v8h3"/></svg>
+              <span>Copy</span>
+            </button>
+          </div>
+          <div class="term-tabs" role="tablist" aria-label="Agent examples">
+            <button role="tab" id="tab-claude" aria-controls="panel-claude" aria-selected="true">Claude Code</button>
+            <button role="tab" id="tab-codex" aria-controls="panel-codex" aria-selected="false" tabindex="-1">Codex</button>
+            <button role="tab" id="tab-opencode" aria-controls="panel-opencode" aria-selected="false" tabindex="-1">OpenCode</button>
+            <button role="tab" id="tab-remote" aria-controls="panel-remote" aria-selected="false" tabindex="-1">Remote server</button>
+          </div>
+
+          <div class="term-panel" role="tabpanel" id="panel-claude" aria-labelledby="tab-claude" tabindex="0">
+<pre><code><span class="c"># Install</span>
+<span class="p">$</span> npm install -g code-airlock
+
+<span class="c"># Check the environment</span>
+<span class="p">$</span> code-airlock doctor
+
+<span class="c"># Preview the commands without running them</span>
+<span class="p">$</span> code-airlock --dry-run up
+
+<span class="c"># Start Claude Code in the sandbox</span>
+<span class="p">$</span> code-airlock up
+
+<span class="c"># Review the result from the host</span>
+<span class="p">$</span> code-airlock fetch
+<span class="p">$</span> code-airlock diff
+<span class="p">$</span> code-airlock review
+<span class="p">$</span> code-airlock merge</code></pre>
+          </div>
+
+          <div class="term-panel" role="tabpanel" id="panel-codex" aria-labelledby="tab-codex" tabindex="0" hidden>
+<pre><code><span class="c"># Store Codex credentials via Docker Sandbox secrets</span>
+<span class="p">$</span> sbx secret set -g openai --oauth
+
+<span class="c"># Start Codex in the sandbox</span>
+<span class="p">$</span> AGENT=codex code-airlock up
+
+<span class="c"># Headless run: pass agent args after --</span>
+<span class="p">$</span> AGENT=codex code-airlock up -- "fix the build"
+
+<span class="c"># Review the result from the host</span>
+<span class="p">$</span> code-airlock fetch
+<span class="p">$</span> code-airlock diff
+<span class="p">$</span> code-airlock merge</code></pre>
+          </div>
+
+          <div class="term-panel" role="tabpanel" id="panel-opencode" aria-labelledby="tab-opencode" tabindex="0" hidden>
+<pre><code><span class="c"># Store the provider keys you use</span>
+<span class="p">$</span> sbx secret set -g anthropic
+<span class="p">$</span> sbx secret set -g openai
+
+<span class="c"># Start OpenCode in the sandbox</span>
+<span class="p">$</span> AGENT=opencode code-airlock up
+
+<span class="c"># Review the result from the host</span>
+<span class="p">$</span> code-airlock fetch
+<span class="p">$</span> code-airlock diff
+<span class="p">$</span> code-airlock merge</code></pre>
+          </div>
+
+          <div class="term-panel" role="tabpanel" id="panel-remote" aria-labelledby="tab-remote" tabindex="0" hidden>
+<pre><code><span class="c"># Keep the agent running after SSH disconnects</span>
+<span class="p">$</span> code-airlock --tmux up
+
+<span class="c"># Detach: Ctrl-b, then d. Reattach later:</span>
+<span class="p">$</span> code-airlock attach
+
+<span class="c"># Unattended run: start detached</span>
+<span class="p">$</span> code-airlock --tmux-detached up
+
+<span class="c"># Check this repo's sandbox and tmux session</span>
+<span class="p">$</span> code-airlock status</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- demo gif -->
+    <section class="demo" id="demo">
+      <div class="container">
+        <h2 class="reveal">See the workflow in action</h2>
+        <figure class="demo-frame reveal">
+          <div class="term-bar">
+            <span class="term-dot" aria-hidden="true"></span>
+            <span class="term-dot" aria-hidden="true"></span>
+            <span class="term-dot" aria-hidden="true"></span>
+            <span class="term-title">code-airlock demo</span>
+          </div>
+          <img src="animation.gif" width="960" height="572" loading="lazy"
+               alt="Terminal recording of the code-airlock workflow: starting a coding agent in a sandbox and reviewing its commits from the host." />
+          <figcaption>Recorded terminal session from the project README.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- isolation layers -->
+    <section class="layers" id="isolation">
+      <div class="container">
+        <h2 class="reveal">Layers, not replacements</h2>
+        <p class="section-sub reveal">Agent permissions, project instructions, and approval rules stay useful. Code Airlock adds a disposable VM, a separate repository clone, network policy controls, and a host-side Git review step underneath them.</p>
+        <div class="layer-stack reveal" role="img" aria-label="Layer diagram, top to bottom: agent instructions and approval rules, the coding agent process, the Docker Sandbox microVM as the isolation boundary, the read-only host repository, and host-side Git review.">
+          <div class="layer"><span class="layer-name">Agent instructions and approval rules</span><span class="layer-note">policy inside the agent</span></div>
+          <div class="layer-arrow" aria-hidden="true"></div>
+          <div class="layer"><span class="layer-name">Coding agent process</span><span class="layer-note">Claude Code, Codex, OpenCode</span></div>
+          <div class="layer-arrow" aria-hidden="true"></div>
+          <div class="layer layer-accent"><span class="layer-name">Docker Sandbox microVM</span><span class="layer-note">the isolation boundary</span></div>
+          <div class="layer-arrow" aria-hidden="true"></div>
+          <div class="layer"><span class="layer-name">Read-only host repository</span><span class="layer-note">clone mode</span></div>
+          <div class="layer-arrow" aria-hidden="true"></div>
+          <div class="layer"><span class="layer-name">Host-side Git review</span><span class="layer-note">fetch, diff, review, merge</span></div>
+        </div>
+        <p class="layers-caveat reveal">None of this makes running arbitrary agent output risk-free. It narrows what a misbehaving agent can reach.</p>
+      </div>
+    </section>
+
+    <!-- thin wrapper -->
+    <section class="wrapper" id="wrapper">
+      <div class="container wrapper-grid">
+        <div class="reveal">
+          <h2>A small wrapper around a strong primitive</h2>
+          <p>Code Airlock is intentionally a thin wrapper around Docker Sandboxes, not a replacement for it. Reach for <code>sbx</code> directly when you want full control over sandbox lifecycle, policies, kits, and one-off experiments.</p>
+          <p>Code Airlock packages the common coding-agent loop into repeatable commands:</p>
+        </div>
+        <ul class="feature-list reveal">
+          <li>Stable sandbox naming per repository</li>
+          <li>Clone mode by default</li>
+          <li>One-command agent startup</li>
+          <li><code>AGENTS.md</code> scaffolding</li>
+          <li>Opt-in config seeding</li>
+          <li>Fetch, diff, visual review, and merge</li>
+          <li>Remote runs through tmux</li>
+          <li>Configurable network allowlist</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- security notes -->
+    <section class="security" id="security">
+      <div class="container">
+        <h2 class="reveal">Keep the boundary narrow</h2>
+        <div class="security-grid">
+          <div class="sec-item reveal">
+            <h3>The microVM is the boundary</h3>
+            <p>Isolation comes from the Docker Sandbox microVM, not from the agent's own permission model.</p>
+          </div>
+          <div class="sec-item reveal">
+            <h3>The host repo stays read-only</h3>
+            <p>Clone mode keeps your host repository mounted read-only while the agent runs.</p>
+          </div>
+          <div class="sec-item reveal">
+            <h3>Allowed hosts are egress paths</h3>
+            <p>Keep the network allowlist as narrow as the task allows. Anything on it is reachable from inside the sandbox.</p>
+          </div>
+          <div class="sec-item reveal">
+            <h3>Scope credentials narrowly</h3>
+            <p>Supply credentials through Docker Sandbox secret management, and only the ones the task truly requires.</p>
+          </div>
+          <div class="sec-item reveal">
+            <h3>Commit before it counts</h3>
+            <p>Sandbox work must be committed before fetch and review can bring it back through the normal workflow.</p>
+          </div>
+          <div class="sec-item reveal">
+            <h3>Removal deletes the clone</h3>
+            <p>Removing a sandbox deletes its private clone. Fetch or push anything you want to keep first.</p>
+          </div>
+        </div>
+        <p class="sec-link reveal"><a class="ext-link" href="https://github.com/Trivo25/code-airlock#security-notes" target="_blank" rel="noopener">Full security notes in the README<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.3" d="M4 2h6v6M10 2L2 10"/></svg></a></p>
+      </div>
+    </section>
+
+    <!-- requirements -->
+    <section class="requirements" id="requirements">
+      <div class="container">
+        <h2 class="req-heading reveal">Requirements</h2>
+        <ul class="req-list reveal">
+          <li>macOS on Apple Silicon</li>
+          <li>Linux with KVM enabled</li>
+          <li>Windows 11 with Hypervisor Platform, under WSL2</li>
+          <li>Git</li>
+          <li>Docker Sandboxes CLI (<code>sbx</code>)</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- final CTA -->
+    <section class="final-cta" id="get-started">
+      <div class="container">
+        <h2 class="reveal">Give the agent room to work.<br>Keep control of what lands.</h2>
+        <div class="hero-actions final-actions reveal">
+          <a class="btn btn-primary" href="https://github.com/Trivo25/code-airlock" target="_blank" rel="noopener">View on GitHub</a>
+          <div class="install-chip">
+            <code>npm install -g code-airlock</code>
+            <button class="copy-btn" type="button" data-copy="npm install -g code-airlock" aria-label="Copy install command">
+              <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" d="M5.5 5.5h8v8h-8z"/><path fill="none" stroke="currentColor" stroke-width="1.4" d="M10.5 5.5v-3h-8v8h3"/></svg>
+            </button>
+          </div>
+        </div>
+        <p class="cta-meta reveal">MIT licensed · <a class="ext-link" href="https://github.com/Trivo25/code-airlock#readme" target="_blank" rel="noopener">Read the README<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.3" d="M4 2h6v6M10 2L2 10"/></svg></a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <a class="wordmark" href="#top">
+        <svg class="mark" width="18" height="18" viewBox="0 0 22 22" aria-hidden="true">
+          <rect x="1.5" y="1.5" width="7" height="19" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="13.5" y="1.5" width="7" height="19" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="11" cy="11" r="1.8" fill="var(--accent)"/>
+        </svg>
+        <span>Code Airlock</span>
+      </a>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="https://github.com/Trivo25/code-airlock" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/Trivo25/code-airlock#readme" target="_blank" rel="noopener">README</a>
+        <a href="https://github.com/Trivo25/code-airlock/issues" target="_blank" rel="noopener">Issues</a>
+        <a href="https://github.com/Trivo25/code-airlock/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+      </nav>
+      <p class="footer-credit">Built by <a href="https://github.com/Trivo25" target="_blank" rel="noopener">Florian / Trivo25</a></p>
+    </div>
+  </footer>
+
+  <script src="main.js" defer></script>
+</body>
+</html>
