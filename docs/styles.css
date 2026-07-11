@@ -1229,3 +1229,62 @@ section + section {
     padding: 16px;
   }
 }
+
+/* airlock transition: the hero sits in a slightly darker warm-stone chamber.
+   Below the amber boundary the page returns to the off-white host world. */
+:root {
+  --chamber: #ece8dc;
+  --chamber-border: #d6d1c2;
+}
+.nav {
+  background: rgba(236, 232, 220, 0.9);
+  border-bottom-color: var(--chamber-border);
+}
+.hero {
+  background: var(--chamber);
+  border-bottom: 1px solid rgba(182, 122, 15, 0.55);
+  overflow: visible;
+}
+.hero::before {
+  background-image:
+    linear-gradient(rgba(27, 28, 30, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(27, 28, 30, 0.05) 1px, transparent 1px);
+}
+.hero .install-chip,
+.hero .copy-btn,
+.hero .diagram {
+  border-color: var(--chamber-border);
+}
+.hero .diagram {
+  box-shadow: 0 1px 3px rgba(27, 28, 30, 0.06);
+}
+.boundary-tag {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 50%);
+  z-index: 2;
+  background: var(--chamber);
+  border: 1px solid rgba(156, 107, 6, 0.5);
+  border-radius: 3px;
+  padding: 2px 10px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent-ink);
+}
+.hero + section {
+  border-top: none;
+}
+
+@media (max-width: 800px) {
+  .nav-menu {
+    background: var(--chamber);
+    border-bottom-color: var(--chamber-border);
+  }
+  .nav-menu > a:not(.btn) {
+    border-bottom-color: var(--chamber-border);
+  }
+}
