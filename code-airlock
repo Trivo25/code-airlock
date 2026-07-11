@@ -456,6 +456,32 @@ cmd_up() {
   fi
 }
 
+cmd_run() {
+  task="${1:-}"
+  [ -n "$task" ] || die "Usage: $(basename "$0") run \"<task>\""
+  shift
+
+  # translate the task into the agent's non-interactive invocation
+  case "$AGENT" in
+    claude)   set -- -p "$task" "$@" ;;
+    codex)    set -- exec --dangerously-bypass-approvals-and-sandbox "$task" "$@" ;;
+    opencode) set -- run "$task" "$@" ;;
+    *)
+      warn "No headless mapping for agent '$AGENT'; passing the task as a plain argument."
+      set -- "$task" "$@"
+      ;;
+  esac
+
+  cmd_up "$@"
+
+  if [ "$DRY_RUN" != 1 ] && [ "$USE_TMUX" != 1 ]; then
+    info "Agent run finished. Review the result:"
+    info "  $0 diff     # inspect the changes"
+    info "  $0 review   # open a visual review"
+    info "  $0 merge    # merge into your branch"
+  fi
+}
+
 cmd_shell() { preflight; run_sbx exec -it "$NAME" bash; }
 
 cmd_init() {
@@ -499,6 +525,45 @@ cmd_merge() {
   fetch_sandbox
   info "Merging sandbox-$NAME/$base into $base"
   run_cmd git -C "$REPO_DIR" merge "$(sandbox_ref "$base")"
+}
+
+cmd_pr() {
+  preflight
+  base="${1:-$(current_branch)}"
+  branch="${2:-${PR_BRANCH:-code-airlock/$NAME}}"
+  fetch_sandbox
+
+  ref="$(sandbox_ref "$base")"
+  if [ "$DRY_RUN" != 1 ]; then
+    git -C "$REPO_DIR" rev-parse --verify "$ref" >/dev/null \
+      || die "Sandbox branch not found: $ref"
+    git -C "$REPO_DIR" remote get-url origin >/dev/null 2>&1 \
+      || die "No 'origin' remote configured. Add one, then rerun: $0 pr"
+  fi
+
+  # host-side push: the sandbox never needs GitHub credentials for this
+  info "Updating branch '$branch' from $ref and pushing to origin."
+  run_cmd git -C "$REPO_DIR" branch -f "$branch" "$ref"
+  run_cmd git -C "$REPO_DIR" push -u origin "$branch"
+
+  if command -v gh >/dev/null 2>&1; then
+    if [ "$DRY_RUN" = 1 ]; then
+      print_cmd gh pr create --head "$branch" --base "$base" --fill
+      return 0
+    fi
+    info "Opening a pull request: $branch -> $base"
+    (cd "$REPO_DIR" && gh pr create --head "$branch" --base "$base" --fill)
+    return 0
+  fi
+
+  warn "gh is not installed. The branch is pushed; open the pull request manually."
+  origin_url="$(git -C "$REPO_DIR" remote get-url origin 2>/dev/null || true)"
+  case "$origin_url" in
+    git@github.com:*) repo_path="${origin_url#git@github.com:}" ;;
+    https://github.com/*) repo_path="${origin_url#https://github.com/}" ;;
+    *) repo_path="" ;;
+  esac
+  [ -n "$repo_path" ] && info "  https://github.com/${repo_path%.git}/compare/$base...$branch"
 }
 
 cmd_net()  { preflight; run_sbx policy log; }
@@ -597,6 +662,87 @@ cmd_unlock() {
   [ "$DRY_RUN" = 1 ] && info "Dry run only. No network policy was reset."
 }
 
+setup_step() {
+  # show the exact command, then ask before running it
+  desc="$1"
+  shift
+  printf '\n'
+  info "$desc"
+  print_cmd "$@"
+  [ "$DRY_RUN" = 1 ] && return 0
+  printf 'Run it now? [y/N] '
+  read -r ans
+  if [ "${ans:-}" != y ]; then
+    warn "Skipped. Run it manually when ready."
+    return 0
+  fi
+  "$@" || warn "Command failed (exit $?). Fix the problem above, then rerun: $0 setup"
+}
+
+cmd_setup() {
+  DOCTOR_FAILS=0
+  DOCTOR_WARNS=0
+  os="$(uname -s)"
+
+  info "Guided setup for Code Airlock prerequisites ($os)."
+  info "Each step shows the exact command and asks before running anything."
+
+  # git
+  if command -v git >/dev/null 2>&1; then
+    doctor_ok "git installed"
+  else
+    case "$os" in
+      Darwin) setup_step "git is missing. Install the Apple command line tools:" xcode-select --install ;;
+      Linux)
+        if command -v apt-get >/dev/null 2>&1; then
+          setup_step "git is missing. Install it:" sudo apt-get install -y git
+        else
+          warn "git is missing. Install it with your distribution's package manager."
+        fi
+        ;;
+      *) warn "git is missing. Install it first: https://git-scm.com/downloads" ;;
+    esac
+  fi
+
+  # Docker Sandboxes CLI
+  if command -v sbx >/dev/null 2>&1; then
+    doctor_ok "sbx installed"
+  else
+    case "$os" in
+      Linux)
+        if command -v apt-get >/dev/null 2>&1; then
+          info "Docker Sandboxes is missing. It installs from Docker's repository in three steps."
+          setup_step "1/3 Add Docker's package repository:" sh -c 'curl -fsSL https://get.docker.com | sudo REPO_ONLY=1 sh'
+          setup_step "2/3 Install Docker Sandboxes:" sudo apt-get install -y docker-sbx
+          setup_step "3/3 Let your user access KVM (log out and back in afterwards):" sudo usermod -aG kvm "$USER"
+        else
+          warn "Docker Sandboxes is missing. Follow the install guide for your distribution:"
+          info "  https://docs.docker.com/ai/sandboxes/get-started/"
+        fi
+        ;;
+      Darwin)
+        warn "Docker Sandboxes is missing. On macOS (Apple Silicon), install it via Docker's guide:"
+        info "  https://docs.docker.com/ai/sandboxes/get-started/"
+        ;;
+      MINGW*|MSYS*|CYGWIN*)
+        warn "Run Code Airlock inside WSL2 on Windows 11 with Hypervisor Platform enabled."
+        info "  https://docs.docker.com/ai/sandboxes/get-started/"
+        ;;
+      *)
+        warn "Unsupported host OS: $os. Docker Sandboxes supports macOS, Linux, and Windows via WSL2."
+        ;;
+    esac
+  fi
+
+  # authentication
+  if command -v sbx >/dev/null 2>&1 && ! sbx ls >/dev/null 2>&1; then
+    setup_step "The sbx CLI is not authenticated yet:" sbx login
+  fi
+
+  printf '\n'
+  info "Setup finished. Validate the environment with:  $0 doctor"
+}
+
 cmd_doctor() {
   DOCTOR_FAILS=0
   DOCTOR_WARNS=0
@@ -673,13 +819,58 @@ cmd_doctor() {
   return 1
 }
 
+completion_body() {
+  cat <<'EOF'
+_code_airlock() {
+  local cur prev commands opts agents
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  prev="${COMP_WORDS[COMP_CWORD-1]}"
+  commands="up run setup doctor status attach init shell fetch diff review merge pr net stop rm lockdown unlock completion help"
+  opts="--agent --dry-run --tmux --tmux-detached --seed-config"
+  agents="claude codex opencode gemini copilot cursor droid kiro shell"
+
+  if [ "$prev" = "--agent" ]; then
+    COMPREPLY=($(compgen -W "$agents" -- "$cur"))
+    return
+  fi
+  case "$cur" in
+    -*) COMPREPLY=($(compgen -W "$opts" -- "$cur")); return ;;
+  esac
+  case "$prev" in
+    completion) COMPREPLY=($(compgen -W "bash zsh" -- "$cur")); return ;;
+  esac
+  COMPREPLY=($(compgen -W "$commands" -- "$cur"))
+}
+complete -F _code_airlock code-airlock codelock
+EOF
+}
+
+cmd_completion() {
+  shell="${1:-${SHELL##*/}}"
+  case "$shell" in
+    bash)
+      completion_body
+      ;;
+    zsh)
+      printf 'autoload -U +X compinit && compinit\n'
+      printf 'autoload -U +X bashcompinit && bashcompinit\n'
+      completion_body
+      ;;
+    *)
+      die "Unsupported shell for completion: $shell (bash and zsh are supported)"
+      ;;
+  esac
+}
+
 usage() {
   cat <<EOF
 code-airlock — run coding agents in a Docker Sandbox microVM
 
-Usage: $(basename "$0") [--dry-run] [--tmux|--tmux-detached] [--seed-config] <command> [args]
+Usage: $(basename "$0") [--agent <name>] [--dry-run] [--tmux|--tmux-detached] [--seed-config] <command> [args]
 
   up [-- agent-args]  Create and start the sandbox (clone mode, agent-specific bypass mode)
+  run "<task>"        Start the sandbox and hand the agent a task non-interactively
+  setup               Guided install of missing prerequisites (asks before running anything)
   doctor              Check sbx, virtualization/KVM, git, daemon, and login status
   status              Show this repo's sandbox and tmux session status
   attach              Attach to this repo's Code Airlock tmux session
@@ -688,15 +879,18 @@ Usage: $(basename "$0") [--dry-run] [--tmux|--tmux-detached] [--seed-config] <co
   diff  [base]        Fetch, then diff base..sandbox-<name>/base
   review [base]       Fetch, then open a visual git difftool review
   merge [base]        Fetch, then merge the agent's branch into base
+  pr [base] [branch]  Fetch, push the sandbox branch to origin, and open a pull request
   net                 Show the sandbox network log (allowed / blocked hosts)
   stop                Stop the sandbox, keeping the VM and its commits
   rm                  Remove the sandbox and repo tmux session
   lockdown            Set deny-all default policy and allowlist an existing sandbox
   unlock              Reset Docker Sandboxes policies with: sbx policy reset
   init                Create a starter AGENTS.md in the target repo
+  completion [shell]  Print bash or zsh completion (e.g. source <($(basename "$0") completion))
   help                Show this message
 
 Options:
+  --agent <name>      Select the agent: claude, codex, opencode, gemini, ... (overrides AGENT)
   --dry-run           Print commands without running them
   --tmux              Run 'up' inside a host tmux session and attach
   --tmux-detached     Run 'up' inside a detached host tmux session
@@ -730,6 +924,16 @@ while [ "$#" -gt 0 ]; do
       SEED_USER_CONFIG=1
       shift
       ;;
+    --agent)
+      [ "$#" -ge 2 ] || die "--agent needs a value, e.g. --agent codex"
+      AGENT="$2"
+      shift 2
+      ;;
+    --agent=*)
+      AGENT="${1#--agent=}"
+      [ -n "$AGENT" ] || die "--agent needs a value, e.g. --agent=codex"
+      shift
+      ;;
     --)
       shift
       break
@@ -742,6 +946,8 @@ done
 
 case "${1:-help}" in
   up)       shift; cmd_up "$@" ;;
+  run)      shift; cmd_run "$@" ;;
+  setup)    shift; cmd_setup "$@" ;;
   doctor)   shift; cmd_doctor "$@" ;;
   status)   shift; cmd_status "$@" ;;
   attach)   shift; cmd_attach "$@" ;;
@@ -751,11 +957,13 @@ case "${1:-help}" in
   diff)     shift; cmd_diff "$@" ;;
   review)   shift; cmd_review "$@" ;;
   merge)    shift; cmd_merge "$@" ;;
+  pr)       shift; cmd_pr "$@" ;;
   net)      shift; cmd_net "$@" ;;
   stop)     shift; cmd_stop "$@" ;;
   rm)       shift; cmd_rm "$@" ;;
   lockdown) shift; cmd_lockdown "$@" ;;
   unlock)   shift; cmd_unlock "$@" ;;
+  completion) shift; cmd_completion "$@" ;;
   help|-h|--help) usage ;;
   *) err "Unknown command: $1"; echo; usage; exit 1 ;;
 esac

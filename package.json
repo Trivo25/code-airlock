@@ -1,6 +1,6 @@
 {
   "name": "code-airlock",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Run coding agents in disposable Docker Sandbox microVMs and review their work as git commits.",
   "license": "MIT",
   "homepage": "https://github.com/Trivo25/code-airlock#readme",

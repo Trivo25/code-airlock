@@ -71,6 +71,20 @@ Install Code Airlock with npm:
 npm install -g code-airlock
 ```
 
+Or with Homebrew (head-only formula until a tagged release exists):
+
+```bash
+brew tap trivo25/code-airlock https://github.com/Trivo25/code-airlock
+brew install --HEAD code-airlock
+```
+
+Once the CLI is installed, it can walk you through any missing prerequisites:
+
+```bash
+code-airlock setup   # guided install; shows each command and asks before running it
+code-airlock doctor  # checks only, changes nothing
+```
+
 Or use the standalone shell installer:
 
 ```bash
@@ -111,6 +125,18 @@ Skip or rename the short alias:
 curl -fsSL https://raw.githubusercontent.com/Trivo25/code-airlock/main/install.sh | CODE_AIRLOCK_INSTALL_ALIAS=0 sh
 curl -fsSL https://raw.githubusercontent.com/Trivo25/code-airlock/main/install.sh | CODE_AIRLOCK_ALIAS=calock sh
 ```
+
+## Run a Task
+
+The shortest loop, one command in and ordinary Git review out:
+
+```bash
+code-airlock run "add pagination to the users endpoint and run the tests"
+code-airlock diff
+code-airlock merge
+```
+
+`run` starts the sandbox like `up` and hands the task to the agent's non-interactive mode: `-p` for Claude Code, `exec --dangerously-bypass-approvals-and-sandbox` for Codex, and `run` for OpenCode. Other agents receive the task as a plain argument.
 
 ## Install - Agent
 
@@ -154,9 +180,11 @@ code-airlock attach    # reattach later
 Use another agent:
 
 ```bash
-AGENT=codex code-airlock up
-AGENT=opencode code-airlock up
+code-airlock --agent codex up
+code-airlock --agent opencode run "fix the build"
 ```
+
+The `AGENT` environment variable and the `sandbox.conf` setting still work; the `--agent` flag wins when both are set.
 
 When the agent has made changes, review them from your host:
 
@@ -166,6 +194,15 @@ code-airlock diff
 code-airlock review      # optional: open a visual diff
 code-airlock merge
 ```
+
+Prefer a pull request over a local merge:
+
+```bash
+code-airlock pr                    # push the sandbox branch and open a PR
+code-airlock pr main feature/foo   # explicit base and branch name
+```
+
+The push happens from the host with your credentials, so the sandbox still needs no GitHub access. `pr` uses `gh` when it is installed and prints the GitHub compare URL otherwise. The default branch name is `code-airlock/<sandbox-name>`; override it with the second argument or `PR_BRANCH`.
 
 ## How It Works
 
@@ -437,6 +474,8 @@ ALLOW=api.anthropic.com,*.anthropic.com,github.com,*.github.com
 | Command | What it does |
 | --- | --- |
 | `up [-- agent-args]` | Create and start the sandbox in clone mode with the selected agent |
+| `run "<task>"` | Start the sandbox and hand the agent one task non-interactively |
+| `setup` | Guided install of missing prerequisites; asks before running each step |
 | `doctor` | Check `sbx`, virtualization/KVM, git, daemon reachability, and login status |
 | `status` | Show this repo's sandbox and tmux session status |
 | `attach` | Attach to this repo's Code Airlock tmux session |
@@ -446,6 +485,8 @@ ALLOW=api.anthropic.com,*.anthropic.com,github.com,*.github.com
 | `diff [base]` | Fetch, then show `base..sandbox-<name>/base` |
 | `review [base]` | Fetch, then open a visual Git difftool review |
 | `merge [base]` | Fetch, then merge the sandbox branch into `base` |
+| `pr [base] [branch]` | Fetch, push the sandbox branch to `origin`, and open a pull request |
+| `completion [shell]` | Print bash or zsh shell completion |
 | `net` | Show allowed and blocked network hosts |
 | `stop` | Stop the sandbox but keep its VM and commits |
 | `rm` | Remove the sandbox and repo tmux session after offering to fetch commits |
@@ -456,6 +497,7 @@ Global option:
 
 | Option | What it does |
 | --- | --- |
+| `--agent <name>` | Select the agent for this invocation (overrides `AGENT`) |
 | `--dry-run` | Print commands instead of running them |
 | `--tmux` | Run `up` inside a host-side tmux session and attach |
 | `--tmux-detached` | Run `up` inside a detached host-side tmux session |
@@ -470,13 +512,29 @@ Global option:
 - Do not give the sandbox broad credentials unless the task truly requires them.
 - `code-airlock rm` deletes the sandbox clone. Fetch or push anything you want to keep first.
 
+## Shell Completion
+
+```bash
+# bash: add to ~/.bashrc
+source <(code-airlock completion bash)
+
+# zsh: add to ~/.zshrc
+source <(code-airlock completion zsh)
+```
+
+Homebrew installs register the completions automatically.
+
 ## Requirements
 
-- macOS: Apple Silicon
-- Linux: KVM enabled (`lsmod | grep kvm`)
-- Windows: Windows 11 with Hypervisor Platform, run under WSL2
-- Git
-- Docker Sandboxes CLI (`sbx`)
+| Platform | Status |
+| --- | --- |
+| macOS on Apple Silicon | Supported |
+| macOS on Intel | Not supported (Docker Sandboxes requires Apple Silicon) |
+| Linux | Supported with KVM enabled (`lsmod \| grep kvm`) |
+| Windows 11 | Supported under WSL2 with Hypervisor Platform |
+| Remote servers | Supported over SSH; use `--tmux` so runs survive disconnects |
+
+Required everywhere: Git and the Docker Sandboxes CLI (`sbx`). `code-airlock doctor` verifies all of this on the current machine.
 
 ## License
 

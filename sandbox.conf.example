@@ -38,6 +38,9 @@
 # Set to 0 for parent-repo-only fetch behavior.
 # FETCH_SUBMODULES=1
 
+# Branch name used by `code-airlock pr` (default: code-airlock/<sandbox-name>)
+# PR_BRANCH=my-feature-branch
+
 # Comma-separated network allowlist. Under `lockdown` (deny-all default),
 # the sandbox can reach only these hosts. Add the registries and APIs your
 # build actually needs. A few common extras are shown commented below.
