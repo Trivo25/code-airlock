@@ -74,7 +74,7 @@
     <section class="hero">
       <div class="container hero-grid">
         <div class="hero-copy">
-          <h1>Let coding agents run. Keep your machine behind the&nbsp;airlock.</h1>
+          <h1>Let coding agents run. Keep your machine <span class="h1-accent">behind the&nbsp;airlock.</span></h1>
           <p class="hero-sub">Run Claude Code, Codex, OpenCode, and other coding agents inside disposable Docker Sandbox microVMs. Review their work as ordinary Git commits before anything reaches your local branch.</p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="https://github.com/Trivo25/code-airlock" target="_blank" rel="noopener">View on GitHub</a>
@@ -184,11 +184,11 @@
           </div>
           <div class="benefit reveal">
             <svg class="benefit-icon" width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
-              <path d="M5 23V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <circle cx="5" cy="9" r="2.4" fill="none" stroke="currentColor" stroke-width="1.5"/>
-              <circle cx="5" cy="19" r="2.4" fill="none" stroke="currentColor" stroke-width="1.5"/>
-              <circle cx="19" cy="9" r="2.4" fill="none" stroke="var(--accent-ink)" stroke-width="1.5"/>
-              <path d="M19 11.5c0 5-8 3-11.7 5.2" fill="none" stroke="var(--accent-ink)" stroke-width="1.5"/>
+              <path d="M7 8.9v10.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="7" cy="6.5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="7" cy="21.5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+              <circle cx="21" cy="8" r="2.4" fill="none" stroke="var(--accent-ink)" stroke-width="1.5"/>
+              <path d="M21 10.4C21 16.6 11.2 15.4 8.4 19.2" fill="none" stroke="var(--accent-ink)" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
             <h3>Review ordinary Git commits</h3>
             <p>Fetch the sandbox branch, inspect the diff, open a visual review in your difftool, and merge only after you approve the changes.</p>
@@ -273,7 +273,7 @@
     <section class="quickstart" id="quick-start">
       <div class="container">
         <h2 class="reveal">Quick start</h2>
-        <p class="section-sub reveal">One install. One command to launch, three to review.</p>
+        <p class="section-sub reveal">One install, one command to launch, and an ordinary Git review to finish.</p>
         <div class="terminal reveal">
           <div class="term-bar">
             <span class="term-dot" aria-hidden="true"></span>
@@ -319,8 +319,8 @@
 <span class="c"># Start Codex in the sandbox</span>
 <span class="p">$</span> AGENT=codex code-airlock up
 
-<span class="c"># Headless run: pass agent args after --</span>
-<span class="p">$</span> AGENT=codex code-airlock up -- "fix the build"
+<span class="c"># Headless run: approvals off, the microVM is the boundary</span>
+<span class="p">$</span> AGENT=codex code-airlock up -- --dangerously-bypass-approvals-and-sandbox "fix the build"
 
 <span class="c"># Review the result from the host</span>
 <span class="p">$</span> code-airlock fetch
@@ -402,7 +402,7 @@
       <div class="container wrapper-grid">
         <div class="reveal">
           <h2>A small wrapper around a strong primitive</h2>
-          <p>Code Airlock is intentionally a thin wrapper around Docker Sandboxes, not a replacement for it. Reach for <code>sbx</code> directly when you want full control over sandbox lifecycle, policies, kits, and one-off experiments.</p>
+          <p>Code Airlock is intentionally a thin wrapper around <a href="https://docs.docker.com/ai/sandboxes/" target="_blank" rel="noopener">Docker Sandboxes</a>, not a replacement for it. Reach for <code>sbx</code> directly when you want full control over sandbox lifecycle, policies, kits, and one-off experiments.</p>
           <p>Code Airlock packages the common coding-agent loop into repeatable commands:</p>
         </div>
         <ul class="feature-list reveal">
