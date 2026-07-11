@@ -100,10 +100,12 @@ termCopy.addEventListener("click", async () => {
     let data = await res.json();
     let n = data.stargazers_count;
     if (typeof n !== "number" || n < 1) return;
-    let el = document.querySelector(".star-count");
-    el.textContent =
+    let label =
       n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(n);
-    el.hidden = false;
+    for (let el of document.querySelectorAll(".star-count, .star-num")) {
+      el.textContent = label;
+      el.hidden = false;
+    }
   } catch {
     /* offline or rate-limited: keep the count hidden */
   }

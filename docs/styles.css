@@ -180,6 +180,26 @@ a:hover {
   padding: 7px 14px;
   font-size: 0.85rem;
 }
+.btn-star {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+.btn-star:hover {
+  border-color: var(--muted);
+}
+.btn-star svg {
+  color: var(--accent-ink);
+  flex-shrink: 0;
+}
+.star-num {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted);
+  padding-left: 10px;
+  border-left: 1px solid var(--border);
+}
 
 /* copy buttons (light context by default, dark inside terminal frames) */
 .copy-btn {
@@ -1252,7 +1272,9 @@ section + section {
 }
 .hero .install-chip,
 .hero .copy-btn,
-.hero .diagram {
+.hero .diagram,
+.hero .btn-star,
+.hero .star-num {
   border-color: var(--chamber-border);
 }
 .hero .diagram {
