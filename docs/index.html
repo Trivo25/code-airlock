@@ -273,6 +273,21 @@
             </div>
           </li>
         </ol>
+        <figure class="demo-frame reveal">
+          <div class="term-bar">
+            <span class="term-dot" aria-hidden="true"></span>
+            <span class="term-dot" aria-hidden="true"></span>
+            <span class="term-dot" aria-hidden="true"></span>
+            <span class="term-title">code-airlock demo</span>
+          </div>
+          <video src="demo.mp4" width="960" height="572" poster="demo-poster.jpg"
+                 autoplay muted loop playsinline controls preload="metadata"
+                 aria-label="Terminal recording of the code-airlock workflow: starting a coding agent in a sandbox and reviewing its commits from the host.">
+            Your browser cannot play this video.
+            <a href="https://github.com/Trivo25/code-airlock#readme">Watch the recording in the README.</a>
+          </video>
+          <figcaption>The workflow above, recorded.</figcaption>
+        </figure>
       </div>
     </section>
 
@@ -369,28 +384,6 @@
       </div>
     </section>
 
-    <!-- demo gif -->
-    <section class="demo" id="demo">
-      <div class="container">
-        <h2 class="reveal">See the workflow in action</h2>
-        <figure class="demo-frame reveal">
-          <div class="term-bar">
-            <span class="term-dot" aria-hidden="true"></span>
-            <span class="term-dot" aria-hidden="true"></span>
-            <span class="term-dot" aria-hidden="true"></span>
-            <span class="term-title">code-airlock demo</span>
-          </div>
-          <video src="demo.mp4" width="960" height="572" poster="demo-poster.jpg"
-                 autoplay muted loop playsinline controls preload="metadata"
-                 aria-label="Terminal recording of the code-airlock workflow: starting a coding agent in a sandbox and reviewing its commits from the host.">
-            Your browser cannot play this video.
-            <a href="https://github.com/Trivo25/code-airlock#readme">Watch the recording in the README.</a>
-          </video>
-          <figcaption>Recorded terminal session from the project README.</figcaption>
-        </figure>
-      </div>
-    </section>
-
     <!-- isolation layers -->
     <section class="layers" id="isolation">
       <div class="container">
@@ -408,27 +401,6 @@
           <div class="layer"><span class="layer-name">Host-side Git review</span><span class="layer-note">fetch, diff, review, merge</span></div>
         </div>
         <p class="layers-caveat reveal">None of this makes running arbitrary agent output risk-free. It narrows what a misbehaving agent can reach.</p>
-      </div>
-    </section>
-
-    <!-- thin wrapper -->
-    <section class="wrapper" id="wrapper">
-      <div class="container wrapper-grid">
-        <div class="reveal">
-          <h2>A small wrapper around a strong primitive</h2>
-          <p>Code Airlock is intentionally a thin wrapper around <a href="https://docs.docker.com/ai/sandboxes/" target="_blank" rel="noopener">Docker Sandboxes</a>, not a replacement for it. Reach for <code>sbx</code> directly when you want full control over sandbox lifecycle, policies, kits, and one-off experiments.</p>
-          <p>Code Airlock packages the common coding-agent loop into repeatable commands:</p>
-        </div>
-        <ul class="feature-list reveal">
-          <li>Stable sandbox naming per repository</li>
-          <li>Clone mode by default</li>
-          <li>One-command agent startup</li>
-          <li><code>AGENTS.md</code> scaffolding</li>
-          <li>Opt-in config seeding</li>
-          <li>Fetch, diff, review, merge, or PR</li>
-          <li>Remote runs through tmux</li>
-          <li>Configurable network allowlist</li>
-        </ul>
       </div>
     </section>
 
@@ -535,16 +507,8 @@
         <h2 class="reveal">Common questions</h2>
         <div class="faq-list reveal">
           <details>
-            <summary>Why let the agent run freely at all?</summary>
-            <p>Coding agents are most effective when they can install dependencies, run test suites, start services, read logs, and iterate on failures. Approving every shell command turns the agent into a slower autocomplete loop. Code Airlock moves the safety boundary below the agent instead: more autonomy inside a disposable microVM, while the host repository stays read-only.</p>
-          </details>
-          <details>
             <summary>Why not just use sbx directly?</summary>
-            <p>You can. Code Airlock is intentionally a thin wrapper around Docker Sandboxes, not a replacement. Use sbx when you want full control over sandbox lifecycle, policies, kits, and one-off experiments. Use Code Airlock when you want the common coding-agent loop already wired together: clone mode by default, stable sandbox naming, one-command startup, and the fetch, diff, review, merge, and pr commands.</p>
-          </details>
-          <details>
-            <summary>Why not just configure the agent's own permissions better?</summary>
-            <p>Agent permissions, project instructions, and approval rules stay useful, and Code Airlock works with them. But they are policy inside the agent process. They do not give you a disposable VM, a read-only host repository, a separate clone for agent commits, or a host-side review step. The sandbox limits what happens when the agent does not behave as configured.</p>
+            <p>You can. Code Airlock is intentionally a thin wrapper around Docker Sandboxes, not a replacement. Use sbx when you want full control over sandbox lifecycle, policies, kits, and one-off experiments. Use Code Airlock when you want the common coding-agent loop already wired together: clone mode by default, stable sandbox naming, one-command startup, the fetch, diff, review, merge, and pr commands, plus AGENTS.md scaffolding, opt-in config seeding, tmux-backed remote runs, and a configurable network allowlist.</p>
           </details>
           <details>
             <summary>What happens to work the agent does not commit?</summary>
@@ -559,18 +523,8 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Why let the agent run freely at all?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Coding agents are most effective when they can install dependencies, run test suites, start services, read logs, and iterate on failures. Code Airlock moves the safety boundary below the agent: more autonomy inside a disposable microVM, while the host repository stays read-only." }
-          },
-          {
-            "@type": "Question",
             "name": "Why not just use sbx directly?",
-            "acceptedAnswer": { "@type": "Answer", "text": "You can. Code Airlock is intentionally a thin wrapper around Docker Sandboxes that wires the common coding-agent loop together: clone mode by default, stable sandbox naming, one-command startup, and the fetch, diff, review, merge, and pr commands." }
-          },
-          {
-            "@type": "Question",
-            "name": "Why not just configure the agent's own permissions better?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Agent permissions and approval rules stay useful, but they are policy inside the agent process. They do not give you a disposable VM, a read-only host repository, a separate clone for agent commits, or a host-side review step." }
+            "acceptedAnswer": { "@type": "Answer", "text": "You can. Code Airlock is intentionally a thin wrapper around Docker Sandboxes that wires the common coding-agent loop together: clone mode by default, stable sandbox naming, one-command startup, the fetch, diff, review, merge, and pr commands, plus AGENTS.md scaffolding, opt-in config seeding, tmux-backed remote runs, and a configurable network allowlist." }
           },
           {
             "@type": "Question",
