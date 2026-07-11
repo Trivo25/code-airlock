@@ -1421,3 +1421,23 @@ fieldset.field legend {
     justify-content: center;
   }
 }
+
+/* quick start footnote */
+.qs-note {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: none;
+}
+.qs-note code,
+.step-body p code {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-size: 0.85em;
+  color: var(--text);
+  overflow-wrap: break-word;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}

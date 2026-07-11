@@ -268,7 +268,7 @@
                   <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.4" d="M5.5 5.5h8v8h-8z"/><path fill="none" stroke="currentColor" stroke-width="1.4" d="M10.5 5.5v-3h-8v8h3"/></svg>
                 </button>
               </div>
-              <p>You decide when the changes are ready to enter your local branch.</p>
+              <p>You decide when the changes are ready to enter your local branch. Or skip the local merge: <code>code-airlock pr</code> pushes the sandbox branch to origin and opens a pull request.</p>
             </div>
           </li>
         </ol>
@@ -302,34 +302,34 @@
 <pre><code><span class="c"># Install</span>
 <span class="p">$</span> npm install -g code-airlock
 
-<span class="c"># Check the environment</span>
+<span class="c"># First time? Guided prerequisites, then a health check</span>
+<span class="p">$</span> code-airlock setup
 <span class="p">$</span> code-airlock doctor
 
-<span class="c"># Preview the commands without running them</span>
-<span class="p">$</span> code-airlock --dry-run up
+<span class="c"># One-shot task: sandbox up, agent works, commits come back</span>
+<span class="p">$</span> code-airlock run "add pagination to the users endpoint"
 
-<span class="c"># Start Claude Code in the sandbox</span>
+<span class="c"># Or start an interactive Claude Code session</span>
 <span class="p">$</span> code-airlock up
 
-<span class="c"># Review the result from the host</span>
-<span class="p">$</span> code-airlock fetch
+<span class="c"># Review from the host, then merge or open a pull request</span>
 <span class="p">$</span> code-airlock diff
 <span class="p">$</span> code-airlock review
-<span class="p">$</span> code-airlock merge</code></pre>
+<span class="p">$</span> code-airlock merge
+<span class="p">$</span> code-airlock pr</code></pre>
           </div>
 
           <div class="term-panel" role="tabpanel" id="panel-codex" aria-labelledby="tab-codex" tabindex="0" hidden>
 <pre><code><span class="c"># Store Codex credentials via Docker Sandbox secrets</span>
 <span class="p">$</span> sbx secret set -g openai --oauth
 
-<span class="c"># Start Codex in the sandbox</span>
-<span class="p">$</span> AGENT=codex code-airlock up
+<span class="c"># One-shot task: approvals off, the microVM is the boundary</span>
+<span class="p">$</span> code-airlock --agent codex run "fix the build"
 
-<span class="c"># Headless run: approvals off, the microVM is the boundary</span>
-<span class="p">$</span> AGENT=codex code-airlock up -- --dangerously-bypass-approvals-and-sandbox "fix the build"
+<span class="c"># Or start an interactive Codex session (AGENT=codex works too)</span>
+<span class="p">$</span> code-airlock --agent codex up
 
-<span class="c"># Review the result from the host</span>
-<span class="p">$</span> code-airlock fetch
+<span class="c"># Review from the host</span>
 <span class="p">$</span> code-airlock diff
 <span class="p">$</span> code-airlock merge</code></pre>
           </div>
@@ -339,11 +339,13 @@
 <span class="p">$</span> sbx secret set -g anthropic
 <span class="p">$</span> sbx secret set -g openai
 
-<span class="c"># Start OpenCode in the sandbox</span>
-<span class="p">$</span> AGENT=opencode code-airlock up
+<span class="c"># One-shot task with OpenCode</span>
+<span class="p">$</span> code-airlock --agent opencode run "write tests for the parser"
 
-<span class="c"># Review the result from the host</span>
-<span class="p">$</span> code-airlock fetch
+<span class="c"># Or start an interactive session</span>
+<span class="p">$</span> code-airlock --agent opencode up
+
+<span class="c"># Review from the host</span>
 <span class="p">$</span> code-airlock diff
 <span class="p">$</span> code-airlock merge</code></pre>
           </div>
@@ -362,6 +364,7 @@
 <span class="p">$</span> code-airlock status</code></pre>
           </div>
         </div>
+        <p class="qs-note reveal">Prefer Homebrew? <code>brew tap trivo25/code-airlock https://github.com/Trivo25/code-airlock</code>, then <code>brew install --HEAD code-airlock</code>. Tab completion: <code>source &lt;(code-airlock completion)</code>.</p>
       </div>
     </section>
 
@@ -417,7 +420,7 @@
           <li>One-command agent startup</li>
           <li><code>AGENTS.md</code> scaffolding</li>
           <li>Opt-in config seeding</li>
-          <li>Fetch, diff, visual review, and merge</li>
+          <li>Fetch, diff, review, merge, or PR</li>
           <li>Remote runs through tmux</li>
           <li>Configurable network allowlist</li>
         </ul>
